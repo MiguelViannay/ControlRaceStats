@@ -12,6 +12,7 @@
     <!-- =================================== -->
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
     <style>
         :root {
             --cor-branca: #FFFFFF; --cor-preta: #121212; --cor-cinza: #F0F2F5;
@@ -32,6 +33,13 @@
         header {
             background-color: var(--cor-preta); color: var(--cor-branca); padding: 15px 20px;
             text-align: center; font-size: 1.2rem; font-weight: bold; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            background-size: cover; background-position: center;
+        }
+        #header-logo { max-height: 30px; max-width: 30px; }
+        #readonly-banner {
+            background-color: var(--cor-aviso); color: black; font-size: 0.8rem;
+            padding: 5px; text-align: center; font-weight: bold;
         }
         main { flex-grow: 1; overflow-y: auto; padding: 20px; }
         nav {
@@ -110,6 +118,10 @@
         .status-espera { background-color: var(--cor-cinza-escuro); }
         .status-ativa { background-color: var(--cor-aviso); color: var(--cor-preta); }
         .status-finalizada { background-color: var(--cor-sucesso); }
+        .sprint-badge {
+            background-color: var(--cor-destaque); color: white; font-size: 0.6rem;
+            padding: 2px 6px; border-radius: 8px; margin-left: 8px; font-weight: bold;
+        }
         .tabs { display: flex; border-bottom: 1px solid #ccc; margin-bottom: 16px; }
         .tab-button {
             padding: 10px 16px; cursor: pointer; background: none; border: none;
@@ -122,7 +134,11 @@
 </head>
 <body>
     <div id="app-container">
-        <header>TV Viannay Race Esporte</header>
+        <div id="readonly-banner" class="hidden">Modo de Visualização</div>
+        <header>
+            <img id="header-logo" src="" alt="Logo" class="hidden">
+            <span id="header-title">TV Viannay Race Esporte</span>
+        </header>
         <main id="main-content">
             <!-- PÁGINA: INÍCIO / TEMPORADA -->
             <div id="page-inicio" class="page active">
@@ -214,6 +230,20 @@
                     </div>
                 </div>
                 <div class="card">
+                    <h3>Personalização da Temporada</h3>
+                    <form id="form-theme">
+                        <div class="input-group"><label>Título do Cabeçalho</label><input type="text" id="theme-header-title"></div>
+                        <div class="input-group"><label>URL do Logo</label><input type="url" id="theme-header-logo" placeholder="https://..."></div>
+                        <div class="input-group"><label>Banner do Cabeçalho (URL ou Cor)</label><input type="text" id="theme-header-banner" placeholder="https://... ou #código"></div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+                            <div class="input-group"><label>Cor Destaque</label><input type="color" id="theme-cor-destaque"></div>
+                            <div class="input-group"><label>Cor Cabeçalho</label><input type="color" id="theme-cor-preta"></div>
+                            <div class="input-group"><label>Cor Fundo</label><input type="color" id="theme-cor-cinza"></div>
+                        </div>
+                        <button type="submit" class="btn btn-sucesso">Salvar Tema</button>
+                    </form>
+                </div>
+                <div class="card">
                     <h3>Configuração de Pontos</h3>
                     <form id="form-pontuacao">
                         <h4>Corrida Principal</h4>
@@ -230,11 +260,15 @@
                         
                         <h4 style="margin-top:20px;">Ponto Extra</h4>
                         <div class="input-group">
-                            <label for="ponto-volta-rapida">Pontos por Volta Mais Rápida</label>
-                            <input type="number" id="ponto-volta-rapida" min="0" value="1">
+                            <label for="ponto-volta-rapida">Pontos por Volta Mais Rápida (Top 10)</label>
+                            <input type="number" id="ponto-volta-rapida" min="0">
                         </div>
                         <button type="submit" class="btn btn-sucesso" style="margin-top: 20px;">Salvar Pontuação</button>
                     </form>
+                </div>
+                 <div class="card">
+                    <h3>Compartilhar</h3>
+                    <button id="btn-share" class="btn btn-principal" style="background-color: var(--cor-azul);">Compartilhar Temporada (Modo Leitura)</button>
                 </div>
             </div>
         </main>
@@ -257,11 +291,16 @@
         document.addEventListener('DOMContentLoaded', () => {
             const APP_STORAGE_KEY = 'viannayRaceApp_v5';
             let state = {};
+            let isReadOnly = false;
             let teamChart = null;
 
             const createNewSeason = (nome) => ({
                 id: Date.now(),
                 nome,
+                theme: {
+                    corDestaque: '#E53935', corPreta: '#121212', corCinza: '#F0F2F5',
+                    headerTitle: 'TV Viannay Race Esporte', headerLogo: '', headerBanner: ''
+                },
                 equipes: [],
                 pilotos: [],
                 calendario: [],
@@ -275,11 +314,11 @@
             });
 
             const saveState = () => {
+                if (isReadOnly) return;
                 try {
                     localStorage.setItem(APP_STORAGE_KEY, JSON.stringify(state));
                 } catch (e) {
                     console.error("Erro ao salvar o estado:", e);
-                    alert("Não foi possível salvar os dados. O armazenamento pode estar cheio.");
                 }
             };
             const loadState = () => {
@@ -287,18 +326,47 @@
                 if (savedState) {
                     state = JSON.parse(savedState);
                 } else {
-                    state = {
-                        seasons: {},
-                        currentSeasonId: null
-                    };
+                    state = { seasons: {}, currentSeasonId: null };
                 }
             };
 
             const getCurrentSeason = () => state.currentSeasonId ? state.seasons[state.currentSeasonId] : null;
 
+            const applyTheme = (theme) => {
+                const root = document.documentElement;
+                root.style.setProperty('--cor-destaque', theme.corDestaque);
+                root.style.setProperty('--cor-preta', theme.corPreta);
+                root.style.setProperty('--cor-cinza', theme.corCinza);
+
+                const header = document.querySelector('header');
+                const headerTitle = document.getElementById('header-title');
+                const headerLogo = document.getElementById('header-logo');
+
+                headerTitle.textContent = theme.headerTitle || 'TV Viannay Race Esporte';
+                if (theme.headerLogo) {
+                    headerLogo.src = theme.headerLogo;
+                    headerLogo.classList.remove('hidden');
+                } else {
+                    headerLogo.classList.add('hidden');
+                }
+
+                if (theme.headerBanner) {
+                    if (theme.headerBanner.startsWith('#') || theme.headerBanner.startsWith('rgb')) {
+                        header.style.backgroundImage = 'none';
+                        header.style.backgroundColor = theme.headerBanner;
+                    } else {
+                        header.style.backgroundImage = `url(${theme.headerBanner})`;
+                    }
+                } else {
+                    header.style.backgroundImage = 'none';
+                    header.style.backgroundColor = 'var(--cor-preta)';
+                }
+            };
+
             const render = () => {
                 const currentSeason = getCurrentSeason();
                 if (currentSeason) {
+                    applyTheme(currentSeason.theme);
                     document.getElementById('selecao-temporada-view').classList.add('hidden');
                     document.getElementById('dashboard-temporada-view').classList.remove('hidden');
                     document.getElementById('temporada-nome').textContent = currentSeason.nome;
@@ -317,11 +385,7 @@
             const renderListaTemporadas = () => {
                 const lista = document.getElementById('lista-temporadas');
                 const seasonIds = Object.keys(state.seasons);
-                if (seasonIds.length === 0) {
-                    lista.innerHTML = '<p>Nenhuma temporada criada.</p>';
-                    return;
-                }
-                lista.innerHTML = '<h3>Selecione uma Temporada</h3>';
+                lista.innerHTML = seasonIds.length === 0 ? '<p>Nenhuma temporada criada.</p>' : '<h3>Selecione uma Temporada</h3>';
                 seasonIds.forEach(id => {
                     const season = state.seasons[id];
                     lista.innerHTML += `
@@ -336,24 +400,18 @@
             const renderDashboard = () => {
                 const season = getCurrentSeason();
                 if (!season) return;
-
                 const renderMiniLista = (containerId, items, renderFn) => {
                     const container = document.getElementById(containerId);
                     container.innerHTML = items.length ? '' : '<p>Nenhum item.</p>';
                     items.forEach(item => container.innerHTML += renderFn(item));
                 };
-
-                renderMiniLista('dashboard-lista-equipes', season.equipes, (e) => `
-                    <div class="lista-item"><div class="item-cor" style="background-color: ${e.cor};"></div><p>${e.nome}</p></div>`);
-                
+                renderMiniLista('dashboard-lista-equipes', season.equipes, (e) => `<div class="lista-item"><div class="item-cor" style="background-color: ${e.cor};"></div><p>${e.nome}</p></div>`);
                 renderMiniLista('dashboard-lista-pilotos', season.pilotos, (p) => {
-                    const equipe = season.equipes.find(e => e.id === p.equipeId);
+                    const equipe = season.equipes.find(e => Number(e.id) === Number(p.equipeId));
                     return `<div class="lista-item"><div class="item-cor" style="background-color: ${equipe?.cor || '#ccc'};"></div><p>${p.nome}</p></div>`;
                 });
-
                 const ultimasNoticias = [...season.noticias].sort((a, b) => b.data - a.data).slice(0, 3);
-                renderMiniLista('dashboard-lista-noticias', ultimasNoticias, (n) => `
-                    <div class="lista-item"><div class="item-info"><p>${n.titulo}</p><span class="text-sm">${new Date(n.data).toLocaleDateString()}</span></div></div>`);
+                renderMiniLista('dashboard-lista-noticias', ultimasNoticias, (n) => `<div class="lista-item"><div class="item-info"><p>${n.titulo}</p><span class="text-sm">${new Date(n.data).toLocaleDateString()}</span></div></div>`);
             };
             
             const renderCalendario = () => {
@@ -370,17 +428,23 @@
                             <div style="display: flex; align-items: center; justify-content: space-between;">
                                 <div style="display: flex; align-items: center;">
                                     <img src="${c.bandeira || 'https://placehold.co/40x40/eee/ccc?text=?'}" alt="Bandeira" class="item-avatar" style="border-radius: 4px;">
-                                    <div><p style="font-weight: bold;">${c.nome}</p><span class="status status-${c.status}">${c.status.toUpperCase()}</span></div>
+                                    <div>
+                                        <p style="font-weight: bold; display: flex; align-items: center;">
+                                            ${c.nome}
+                                            ${c.isSprint ? '<span class="sprint-badge">SPRINT</span>' : ''}
+                                        </p>
+                                        <span class="status status-${c.status}">${c.status.toUpperCase()}</span>
+                                    </div>
                                 </div>
-                                <div class="action-buttons">
+                                ${!isReadOnly ? `<div class="action-buttons">
                                     <button class="action-btn" data-action="edit-corrida" data-id="${c.id}">✏️</button>
                                     <button class="action-btn" data-action="delete" data-id="${c.id}" data-tipo="corrida">🗑️</button>
-                                </div>
+                                </div>` : ''}
                             </div>
                             <div style="margin-top: 10px; display:flex; gap: 10px;">
                                 ${c.status === 'finalizada' ? 
                                     `<button class="btn btn-secundario" data-action="ver-resultados" data-id="${c.id}">Ver Resultados</button>` :
-                                    `<button class="btn btn-principal" data-action="lancar-resultados" data-id="${c.id}">Lançar Resultados</button>`
+                                    (!isReadOnly ? `<button class="btn btn-principal" data-action="lancar-resultados" data-id="${c.id}">Lançar Resultados</button>` : '')
                                 }
                             </div>
                         </div>`;
@@ -447,7 +511,7 @@
                         <div class="card">
                             <div style="display:flex; justify-content: space-between; align-items: start;">
                                 <div><h4>${n.titulo}</h4><p style="font-size: 0.8rem; color: #555; margin-bottom: 10px;">${new Date(n.data).toLocaleDateString()}</p></div>
-                                <button class="action-btn" data-action="delete" data-id="${n.id}" data-tipo="noticia">🗑️</button>
+                                ${!isReadOnly ? `<button class="action-btn" data-action="delete" data-id="${n.id}" data-tipo="noticia">🗑️</button>` : ''}
                             </div>
                             ${n.imgUrl ? `<img src="${n.imgUrl}" class="noticia-img" alt="Imagem da notícia">` : ''}
                             <p>${n.conteudo}</p>
@@ -460,6 +524,15 @@
             const renderAdminPage = () => {
                 const season = getCurrentSeason();
                 if (!season) return;
+                
+                const theme = season.theme;
+                document.getElementById('theme-header-title').value = theme.headerTitle;
+                document.getElementById('theme-header-logo').value = theme.headerLogo;
+                document.getElementById('theme-header-banner').value = theme.headerBanner;
+                document.getElementById('theme-cor-destaque').value = theme.corDestaque;
+                document.getElementById('theme-cor-preta').value = theme.corPreta;
+                document.getElementById('theme-cor-cinza').value = theme.corCinza;
+
                 const renderPontosInputs = (tipo) => {
                     const container = document.getElementById(`pontos-${tipo}-container`);
                     const pontos = season.pontuacao[tipo];
@@ -488,10 +561,29 @@
                     if (corrida.status === 'finalizada' && corrida.resultados) {
                         const res = corrida.resultados;
                         const getPiloto = id => season.pilotos.find(p => p.id == id);
-                        Object.entries(res.quali).forEach(([pos, pId]) => { const p = getPiloto(pId); if (p) p.pontos += (season.pontuacao.quali[pos] || 0); });
-                        Object.entries(res.sprint).forEach(([pos, pId]) => { const p = getPiloto(pId); if (p && pId !== 'DNF') p.pontos += (season.pontuacao.sprint[pos] || 0); });
+                        
+                        Object.entries(res.grid).forEach(([pos, pId]) => { 
+                            const p = getPiloto(pId); 
+                            if (p && season.pontuacao.quali[pos]) {
+                                p.pontos += (season.pontuacao.quali[pos] || 0);
+                            }
+                        });
+
+                        if (corrida.isSprint) {
+                            Object.entries(res.sprint).forEach(([pos, pId]) => { const p = getPiloto(pId); if (p && pId !== 'DNF') p.pontos += (season.pontuacao.sprint[pos] || 0); });
+                        }
+
                         Object.entries(res.corrida).forEach(([pos, pId]) => { const p = getPiloto(pId); if (p && pId !== 'DNF') p.pontos += (season.pontuacao.corrida[pos] || 0); });
-                        if(res.voltaRapida) { const p = getPiloto(res.voltaRapida); if(p) p.pontos += (season.pontuacao.voltaRapida || 0); }
+                        
+                        if(res.voltaRapida) { 
+                            const p = getPiloto(res.voltaRapida); 
+                            if(p) {
+                                const posCorrida = Object.keys(res.corrida).find(pos => res.corrida[pos] == res.voltaRapida);
+                                if (posCorrida && posCorrida <= 10) {
+                                    p.pontos += (season.pontuacao.voltaRapida || 0);
+                                }
+                            }
+                        }
                     }
                 });
             };
@@ -502,19 +594,21 @@
                 const totalPilotos = season.pilotos.length;
                 if (totalPilotos === 0) return;
 
-                // Impacto por resultado de corrida
                 if(resultados) {
                     season.pilotos.forEach(piloto => {
+                        const posGrid = Object.keys(resultados.grid).find(pos => resultados.grid[pos] == piloto.id);
                         const posCorrida = Object.keys(resultados.corrida).find(pos => resultados.corrida[pos] == piloto.id);
+                        
+                        if(posGrid) piloto.fas += Math.floor((totalPilotos - parseInt(posGrid) + 1) * 5);
+
                         if (posCorrida && resultados.corrida[posCorrida] !== 'DNF') {
                             piloto.fas += Math.floor((totalPilotos - parseInt(posCorrida) + 1) * 50 * (Math.random() * 0.5 + 0.8));
                         } else {
-                            piloto.fas -= Math.floor(Math.random() * 50); // Penalidade por não pontuar ou DNF
+                            piloto.fas -= Math.floor(Math.random() * 100);
                         }
                     });
                 }
 
-                // Impacto por notícia
                 if (noticia) {
                     const { impacto, pilotosMarcados } = noticia;
                     const fanChange = { 'positivo': 500, 'neutro': 50, 'negativo': -350 };
@@ -524,19 +618,17 @@
                     });
                 }
 
-                // Garantir que fãs não sejam negativos
                 season.pilotos.forEach(piloto => {
                     if (piloto.fas < 0) piloto.fas = 0;
                 });
 
-                // Recalcular Reputação
                 const pilotosOrdenados = [...season.pilotos].sort((a, b) => b.pontos - a.pontos);
                 const rankingPilotos = {};
                 pilotosOrdenados.forEach((p, i) => rankingPilotos[p.id] = i + 1);
                 
                 const pontosEquipes = season.equipes.map(eq => ({
                     id: eq.id,
-                    pontos: season.pilotos.filter(p => p.equipeId === eq.id).reduce((acc, p) => acc + p.pontos, 0)
+                    pontos: season.pilotos.filter(p => Number(p.equipeId) === Number(eq.id)).reduce((acc, p) => acc + p.pontos, 0)
                 })).sort((a,b) => b.pontos - a.pontos);
                 const rankingEquipes = {};
                 pontosEquipes.forEach((eq, i) => rankingEquipes[eq.id] = i + 1);
@@ -545,7 +637,7 @@
                     const rankPiloto = rankingPilotos[piloto.id];
                     const rankEquipe = rankingEquipes[piloto.equipeId];
                     if (!rankPiloto || !rankEquipe) {
-                        piloto.reputacao = 5.0; // Padrão se não houver dados
+                        piloto.reputacao = 5.0;
                         return;
                     }
                     
@@ -595,9 +687,14 @@
             });
 
             document.getElementById('btn-mudar-temporada').addEventListener('click', () => {
-                state.currentSeasonId = null;
-                saveState();
-                render();
+                if (isReadOnly) {
+                    window.location.hash = '';
+                    window.location.reload();
+                } else {
+                    state.currentSeasonId = null;
+                    saveState();
+                    render();
+                }
             });
 
             document.getElementById('main-content').addEventListener('click', e => {
@@ -660,7 +757,7 @@
             function showEditCorridaModal(id = null) {
                 const season = getCurrentSeason();
                 const corrida = id ? season.calendario.find(c => c.id == id) : null;
-                showModal(`<h3>${corrida ? 'Editar' : 'Adicionar'} Etapa</h3><form id="form-edit-corrida" data-id="${id || ''}"><div class="input-group"><label>Nome</label><input type="text" id="corrida-nome-edit" value="${corrida?.nome || ''}" required></div><div class="input-group"><label>URL da Bandeira</label><input type="url" id="corrida-bandeira-edit" value="${corrida?.bandeira || ''}" placeholder="https://..."></div><button type="submit" class="btn btn-principal">Salvar</button></form>`);
+                showModal(`<h3>${corrida ? 'Editar' : 'Adicionar'} Etapa</h3><form id="form-edit-corrida" data-id="${id || ''}"><div class="input-group"><label>Nome</label><input type="text" id="corrida-nome-edit" value="${corrida?.nome || ''}" required></div><div class="input-group"><label>URL da Bandeira</label><input type="url" id="corrida-bandeira-edit" value="${corrida?.bandeira || ''}" placeholder="https://..."></div><div class="input-group" style="display:flex; align-items:center;"><input type="checkbox" id="corrida-sprint-edit" ${corrida?.isSprint ? 'checked' : ''} style="width:auto; margin-right: 10px;"><label for="corrida-sprint-edit" style="margin:0;">É uma Etapa Sprint?</label></div><button type="submit" class="btn btn-principal">Salvar</button></form>`);
             }
 
             function showEditNoticiaModal() {
@@ -676,33 +773,35 @@
                 const pilotoOptions = season.pilotos.map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
                 const createSelects = (type) => [...Array(season.pilotos.length)].map((_, i) => `<div class="input-group"><label>${i+1}º Lugar</label><select class="${type}-pos" data-pos="${i+1}"><option value="">--</option>${pilotoOptions}</select></div>`).join('');
                 const createRaceSelects = () => [...Array(season.pilotos.length)].map((_, i) => `<div class="input-group"><label>${i+1}º Lugar</label><select class="corrida-pos" data-pos="${i+1}"><option value="">--</option>${pilotoOptions}<option value="DNF">DNF</option></select></div>`).join('');
-                showModal(`<h3>Resultados para ${corrida.nome}</h3><form id="form-resultados" data-id="${id}"><h4>Grid de Largada</h4>${createSelects('grid')}<hr style="margin:20px 0"><h4>Qualificação</h4>${Object.keys(season.pontuacao.quali).map(pos => `<div class="input-group"><label>${pos}º</label><select class="quali-pos" data-pos="${pos}"><option value="">--</option>${pilotoOptions}</select></div>`).join('')}<hr style="margin:20px 0"><h4>Sprint</h4>${createSelects('sprint')}<hr style="margin:20px 0"><h4>Corrida</h4>${createRaceSelects()}<hr style="margin:20px 0"><h4>Volta Rápida</h4><div class="input-group"><select id="volta-rapida"><option value="">--</option>${pilotoOptions}</select></div><br><button type="submit" class="btn btn-sucesso">Salvar</button></form>`);
+                showModal(`<h3>Resultados para ${corrida.nome}</h3><form id="form-resultados" data-id="${id}"><h4>Grid de Largada / Qualificação</h4>${createSelects('grid')}<hr style="margin:20px 0">${corrida.isSprint ? `<h4>Sprint</h4>${createSelects('sprint')}<hr style="margin:20px 0">` : ''}<h4>Corrida</h4>${createRaceSelects()}<hr style="margin:20px 0"><h4>Volta Rápida</h4><div class="input-group"><select id="volta-rapida"><option value="">--</option>${pilotoOptions}</select></div><br><button type="submit" class="btn btn-sucesso">Salvar</button></form>`);
             }
 
             function showVerResultadosModal(id) {
                  const season = getCurrentSeason();
                  const corrida = season.calendario.find(c => c.id == id);
                  const res = corrida.resultados;
-                 const getNome = (pId) => {
-                    if (pId === 'DNF') return 'DNF';
-                    return season.pilotos.find(p => p.id == pId)?.nome || 'N/A';
-                 }
+                 const getNome = (pId) => (pId === 'DNF') ? 'DNF' : season.pilotos.find(p => p.id == pId)?.nome || 'N/A';
                  const getPontosPilotoNaCorrida = (pilotoId) => {
                     if (pilotoId === 'DNF') return 0;
                     let pontos = 0;
-                    Object.entries(res.quali).forEach(([pos, pId]) => { if(pId == pilotoId) pontos += (season.pontuacao.quali[pos] || 0); });
-                    const sprintPos = Object.keys(res.sprint).find(pos => res.sprint[pos] == pilotoId);
-                    if (sprintPos) pontos += (season.pontuacao.sprint[sprintPos] || 0);
+                    Object.entries(res.grid).forEach(([pos, pId]) => { if(pId == pilotoId && season.pontuacao.quali[pos]) pontos += (season.pontuacao.quali[pos] || 0); });
+                    if (corrida.isSprint) {
+                        const sprintPos = Object.keys(res.sprint).find(pos => res.sprint[pos] == pilotoId);
+                        if (sprintPos) pontos += (season.pontuacao.sprint[sprintPos] || 0);
+                    }
                     const racePos = Object.keys(res.corrida).find(pos => res.corrida[pos] == pilotoId);
                     if (racePos && res.corrida[racePos] !== 'DNF') pontos += (season.pontuacao.corrida[racePos] || 0);
-                    if(res.voltaRapida == pilotoId) pontos += season.pontuacao.voltaRapida;
+                    if(res.voltaRapida == pilotoId) {
+                        const posCorrida = Object.keys(res.corrida).find(pos => res.corrida[pos] == res.voltaRapida);
+                        if (posCorrida && posCorrida <= 10) pontos += season.pontuacao.voltaRapida;
+                    }
                     return pontos;
                  };
                  
                  let html = `<h3>Resultados - ${corrida.nome}</h3>`;
                  html += `<h4>Corrida Principal</h4>` + Object.entries(res.corrida).sort((a,b) => Number(a[0]) - Number(b[0])).map(([pos, pId]) => `<p>${pos}º: ${getNome(pId)} ${pId !== 'DNF' ? `<strong>(+${getPontosPilotoNaCorrida(pId)} pts)</strong>` : ''}</p>`).join('');
-                 if (Object.keys(res.sprint).length > 0) html += `<h4 style="margin-top:15px;">Sprint</h4>` + Object.entries(res.sprint).sort((a,b) => Number(a[0]) - Number(b[0])).map(([pos, pId]) => `<p>${pos}º: ${getNome(pId)}</p>`).join('');
-                 html += `<h4 style="margin-top:15px;">Qualificação</h4>` + Object.entries(res.quali).sort((a,b) => Number(a[0]) - Number(b[0])).map(([pos, pId]) => `<p>${pos}º: ${getNome(pId)}</p>`).join('');
+                 if (corrida.isSprint && Object.keys(res.sprint).length > 0) html += `<h4 style="margin-top:15px;">Sprint</h4>` + Object.entries(res.sprint).sort((a,b) => Number(a[0]) - Number(b[0])).map(([pos, pId]) => `<p>${pos}º: ${getNome(pId)}</p>`).join('');
+                 html += `<h4 style="margin-top:15px;">Grid de Largada</h4>` + Object.entries(res.grid).sort((a,b) => Number(a[0]) - Number(b[0])).map(([pos, pId]) => `<p>${pos}º: ${getNome(pId)}</p>`).join('');
                  if (res.voltaRapida) html += `<p style="margin-top:10px;"><strong>Volta Rápida:</strong> ${getNome(res.voltaRapida)}</p>`;
                  html += `<br><button onclick="hideModal()" class="btn btn-secundario">Fechar</button>`;
                  showModal(html);
@@ -715,7 +814,7 @@
                 const rank = [...season.pilotos].sort((a,b) => b.pontos - a.pontos).findIndex(p => Number(p.id) === Number(id)) + 1;
                 let qualiPos = [], racePos = [];
                 season.calendario.filter(c => c.status === 'finalizada' && c.resultados).forEach(c => {
-                    const qp = Object.keys(c.resultados.quali).find(pos => c.resultados.quali[pos] == id);
+                    const qp = Object.keys(c.resultados.grid).find(pos => c.resultados.grid[pos] == id);
                     const rp = Object.keys(c.resultados.corrida).find(pos => c.resultados.corrida[pos] == id);
                     if (qp) qualiPos.push(parseInt(qp));
                     if (rp) racePos.push(parseInt(rp));
@@ -750,7 +849,7 @@
                     else season.pilotos.push({ id: Date.now(), pontos: 0, fas: 1000, reputacao: 5.0, ...data });
                 }
                 if (form.id === 'form-edit-corrida') {
-                    const data = { nome: form.querySelector('#corrida-nome-edit').value, bandeira: form.querySelector('#corrida-bandeira-edit').value };
+                    const data = { nome: form.querySelector('#corrida-nome-edit').value, bandeira: form.querySelector('#corrida-bandeira-edit').value, isSprint: form.querySelector('#corrida-sprint-edit').checked };
                     if (id) Object.assign(season.calendario.find(c => c.id == id), data);
                     else season.calendario.push({ id: Date.now(), status: 'espera', resultados: null, ...data });
                 }
@@ -761,10 +860,11 @@
                 }
                 if (form.id === 'form-resultados') {
                     const corrida = season.calendario.find(c => c.id == id);
-                    const resultados = { grid: {}, quali: {}, sprint: {}, corrida: {}, voltaRapida: null };
+                    const resultados = { grid: {}, sprint: {}, corrida: {}, voltaRapida: null };
                     form.querySelectorAll('.grid-pos').forEach(s => { if (s.value) resultados.grid[s.dataset.pos] = s.value; });
-                    form.querySelectorAll('.quali-pos').forEach(s => { if (s.value) resultados.quali[s.dataset.pos] = s.value; });
-                    form.querySelectorAll('.sprint-pos').forEach(s => { if (s.value) resultados.sprint[s.dataset.pos] = s.value; });
+                    if (corrida.isSprint) {
+                        form.querySelectorAll('.sprint-pos').forEach(s => { if (s.value) resultados.sprint[s.dataset.pos] = s.value; });
+                    }
                     form.querySelectorAll('.corrida-pos').forEach(s => { if (s.value) resultados.corrida[s.dataset.pos] = s.value; });
                     resultados.voltaRapida = form.querySelector('#volta-rapida').value || null;
                     corrida.resultados = resultados;
@@ -789,6 +889,22 @@
                 saveState();
                 render();
                 alert('Sistema de pontuação salvo!');
+            });
+            
+            document.getElementById('form-theme').addEventListener('submit', e => {
+                e.preventDefault();
+                const season = getCurrentSeason();
+                season.theme = {
+                    headerTitle: document.getElementById('theme-header-title').value,
+                    headerLogo: document.getElementById('theme-header-logo').value,
+                    headerBanner: document.getElementById('theme-header-banner').value,
+                    corDestaque: document.getElementById('theme-cor-destaque').value,
+                    corPreta: document.getElementById('theme-cor-preta').value,
+                    corCinza: document.getElementById('theme-cor-cinza').value,
+                };
+                applyTheme(season.theme);
+                saveState();
+                alert('Tema salvo!');
             });
 
             document.getElementById('page-admin').addEventListener('click', e => {
@@ -821,12 +937,17 @@
                         let pontosDaCorrida = 0;
                         pilotosDaEquipeIds.forEach(pilotoId => {
                             const res = corrida.resultados;
-                            Object.entries(res.quali).forEach(([pos, pId]) => { if(pId == pilotoId) pontosDaCorrida += (season.pontuacao.quali[pos] || 0); });
-                            const sprintPos = Object.keys(res.sprint).find(pos => res.sprint[pos] == pilotoId);
-                            if (sprintPos) pontosDaCorrida += (season.pontuacao.sprint[sprintPos] || 0);
+                            Object.entries(res.grid).forEach(([pos, pId]) => { if(pId == pilotoId && season.pontuacao.quali[pos]) pontosDaCorrida += (season.pontuacao.quali[pos] || 0); });
+                            if (corrida.isSprint) {
+                                const sprintPos = Object.keys(res.sprint).find(pos => res.sprint[pos] == pilotoId);
+                                if (sprintPos) pontosDaCorrida += (season.pontuacao.sprint[sprintPos] || 0);
+                            }
                             const racePos = Object.keys(res.corrida).find(pos => res.corrida[pos] == pilotoId);
                             if (racePos && res.corrida[racePos] !== 'DNF') pontosDaCorrida += (season.pontuacao.corrida[racePos] || 0);
-                            if(res.voltaRapida == pilotoId) pontosDaCorrida += season.pontuacao.voltaRapida;
+                            if(res.voltaRapida == pilotoId) {
+                                const posCorrida = Object.keys(res.corrida).find(pos => res.corrida[pos] == res.voltaRapida);
+                                if (posCorrida && posCorrida <= 10) pontosDaCorrida += season.pontuacao.voltaRapida;
+                            }
                         });
                         pontosAcumulados += pontosDaCorrida;
                         data.push(pontosAcumulados);
@@ -838,17 +959,69 @@
                 if (teamChart) teamChart.destroy();
                 teamChart = new Chart(ctx, { type: 'line', data: { labels, datasets } });
             });
+
+            document.getElementById('btn-share').addEventListener('click', async () => {
+                const season = getCurrentSeason();
+                if (!season) return;
+                try {
+                    const jsonString = JSON.stringify(season);
+                    const compressed = pako.deflate(jsonString, { to: 'string' });
+                    const encoded = btoa(compressed);
+                    const url = `${window.location.origin}${window.location.pathname}#data=${encoded}`;
+                    
+                    showModal(`<h3>Compartilhe sua Temporada</h3><p>Envie este link para seus amigos. Eles poderão ver tudo, mas não poderão editar.</p><textarea rows="3" style="width:100%; margin-top:10px; font-size: 0.8rem;" readonly>${url}</textarea><button id="copy-link-btn" class="btn btn-principal" style="margin-top:10px;">Copiar Link</button>`);
+                    
+                    document.getElementById('copy-link-btn').addEventListener('click', (e) => {
+                        navigator.clipboard.writeText(url).then(() => {
+                            e.target.textContent = 'Copiado!';
+                        }).catch(err => {
+                            alert('Falha ao copiar o link.');
+                        });
+                    });
+                } catch (err) {
+                    alert('Erro ao gerar o link de compartilhamento.');
+                    console.error(err);
+                }
+            });
             
             document.getElementById('modal-backdrop').addEventListener('click', e => { if (e.target.id === 'modal-backdrop') hideModal(); });
             
-            if ('serviceWorker' in navigator) {
+            const checkForShareData = () => {
+                if (window.location.hash.startsWith('#data=')) {
+                    try {
+                        const encoded = window.location.hash.substring(6);
+                        const compressed = atob(encoded);
+                        const jsonString = pako.inflate(compressed, { to: 'string' });
+                        const sharedSeason = JSON.parse(jsonString);
+                        
+                        isReadOnly = true;
+                        state.seasons = { [sharedSeason.id]: sharedSeason };
+                        state.currentSeasonId = sharedSeason.id;
+                        
+                        document.querySelector('[data-page="admin"]').classList.add('hidden');
+                        document.getElementById('readonly-banner').classList.remove('hidden');
+                        document.getElementById('btn-mudar-temporada').textContent = "Sair";
+                        render();
+                        return true;
+                    } catch (err) {
+                        console.error("Erro ao carregar dados compartilhados:", err);
+                        window.location.hash = ''; // Limpa a URL se os dados forem inválidos
+                        return false;
+                    }
+                }
+                return false;
+            };
+
+            if (!checkForShareData()) {
+                loadState();
+                render();
+            }
+            
+            if ('serviceWorker' in navigator && !isReadOnly) {
                 window.addEventListener('load', () => {
-                    navigator.serviceWorker.register('/sw.js').then(reg => console.log('SW registered.'), err => console.log('SW registration failed: ', err));
+                    navigator.serviceWorker.register('./sw.js').then(reg => console.log('SW registered.'), err => console.log('SW registration failed: ', err));
                 });
             }
-
-            loadState();
-            render();
         });
     </script>
 </body>
