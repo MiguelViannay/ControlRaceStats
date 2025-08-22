@@ -729,15 +729,46 @@
                 });
                 const avgQuali = qualiPos.length ? (qualiPos.reduce((a,b) => a+b, 0) / qualiPos.length).toFixed(1) : 'N/A';
                 const avgRace = racePos.length ? (racePos.reduce((a,b) => a+b, 0) / racePos.length).toFixed(1) : 'N/A';
-                showModal(`<div style="text-align:center;"><img src="${piloto.img || 'https://placehold.co/80x80/eee/ccc?text=?'}" class="item-avatar" style="width:80px;height:80px;margin-bottom:10px;"><h2>${piloto.nome}</h2><p style="font-size:1.1rem;color:#555;">${equipe?.nome || 'Sem equipe'}</p></div><div style="margin-top:20px;"><p><strong>Posição Geral:</strong> ${rank}º</p><p><strong>Pontos:</strong> ${piloto.pontos}</p><p><strong>Pos. Média Quali:</strong> ${avgQuali}</p><p><strong>Pos. Média Corrida:</strong> ${avgRace}</p><p><strong>Fãs:</strong> ${piloto.fas.toLocaleString('pt-BR')}</p><p><strong>Reputação:</strong> ${piloto.reputacao.toFixed(1)} / 10</p></div><br><button onclick="hideModal()" class="btn btn-secundario">Fechar</button>`);
+                showModal(`
+        <div style="text-align:center;">
+            <img src="${piloto.img || 'https://placehold.co/80x80/eee/ccc?text=?'}" class="item-avatar" style="width:80px;height:80px;margin-bottom:10px;">
+            <h2>${piloto.nome}</h2>
+            <p style="font-size:1.1rem;color:#555;">${equipe?.nome || 'Sem equipe'}</p>
+        </div>
+        <div style="margin-top:20px;">
+            <p><strong>Posição Geral:</strong> ${rank}º</p>
+            <p><strong>Pontos:</strong> ${piloto.pontos}</p>
+            <p><strong>Pos. Média Quali:</strong> ${avgQuali}</p>
+            <p><strong>Pos. Média Corrida:</strong> ${avgRace}</p>
+            <p><strong>Fãs:</strong> ${piloto.fas.toLocaleString('pt-BR')}</p>
+            <p><strong>Reputação:</strong> ${piloto.reputacao.toFixed(1)} / 10</p>
+        </div>
+        <br>
+        <button onclick="hideModal()" class="btn btn-secundario">Fechar</button>
+        <button onclick="showEditPilotoModal(${id})" class="btn btn-principal" style="margin-top:10px;">Editar</button>
+        <button onclick="if(confirm('Excluir este piloto?')) { deletePiloto(${id}); hideModal(); }" class="btn btn-secundario" style="margin-top:10px;">Excluir</button>
+    `);
             }
-            
             function showVerEquipeModal(id) {
                 const season = getCurrentSeason();
                 const equipe = season.equipes.find(e => e.id == id);
                 const pilotosDaEquipe = season.pilotos.filter(p => p.equipeId == id);
                 const totalPontos = pilotosDaEquipe.reduce((acc, p) => acc + p.pontos, 0);
-                showModal(`<div style="text-align:center;"><img src="${equipe.logo || 'https://placehold.co/80x80/eee/ccc?text=?'}" class="item-avatar" style="width:80px;height:80px;margin-bottom:10px;"><h2>${equipe.nome}</h2><p style="font-size:1.2rem;font-weight:bold;">${totalPontos} Pontos</p></div><div style="margin-top:20px;"><h3>Pilotos</h3>${pilotosDaEquipe.map(p => `<div class="lista-item"><p>${p.nome}</p></div>`).join('') || '<p>Nenhum piloto.</p>'}</div><br><button onclick="hideModal()" class="btn btn-secundario">Fechar</button>`);
+                showModal(`
+        <div style="text-align:center;">
+            <img src="${equipe.logo || 'https://placehold.co/80x80/eee/ccc?text=?'}" class="item-avatar" style="width:80px;height:80px;margin-bottom:10px;">
+            <h2>${equipe.nome}</h2>
+            <p style="font-size:1.2rem;font-weight:bold;">${totalPontos} Pontos</p>
+        </div>
+        <div style="margin-top:20px;">
+            <h3>Pilotos</h3>
+            ${pilotosDaEquipe.map(p => `<div class="lista-item"><p>${p.nome}</p></div>`).join('') || '<p>Nenhum piloto.</p>'}
+        </div>
+        <br>
+        <button onclick="hideModal()" class="btn btn-secundario">Fechar</button>
+        <button onclick="showEditEquipeModal(${id})" class="btn btn-principal" style="margin-top:10px;">Editar</button>
+        <button onclick="if(confirm('Excluir esta equipe?')) { deleteEquipe(${id}); hideModal(); }" class="btn btn-secundario" style="margin-top:10px;">Excluir</button>
+    `);
             }
 
             document.getElementById('modal-backdrop').addEventListener('submit', (e) => {
