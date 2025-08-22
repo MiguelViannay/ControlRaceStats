@@ -353,7 +353,17 @@
 
                 const ultimasNoticias = [...season.noticias].sort((a, b) => b.data - a.data).slice(0, 3);
                 renderMiniLista('dashboard-lista-noticias', ultimasNoticias, (n) => `
-                    <div class="lista-item"><div class="item-info"><p>${n.titulo}</p><span class="text-sm">${new Date(n.data).toLocaleDateString()}</span></div></div>`);
+    <div class="lista-item dashboard-noticia-preview" style="cursor:pointer;align-items:flex-start;" data-action="goto-noticias">
+        ${n.imgUrl ? `<img src="${n.imgUrl}" alt="Imagem" style="width:56px;height:56px;object-fit:cover;border-radius:10px;margin-right:12px;">` : ''}
+        <div class="item-info" style="flex:1;">
+            <p style="font-weight:bold;margin-bottom:2px;">${n.titulo}</p>
+            <span style="font-size:0.8rem;color:#888;">${new Date(n.data).toLocaleDateString()}</span>
+            <div style="font-size:0.95rem;color:#444;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;">
+                ${n.conteudo.replace(/<[^>]+>/g, '').slice(0, 60)}${n.conteudo.length > 60 ? '...' : ''}
+            </div>
+        </div>
+    </div>
+`);
             };
             
             const renderCalendario = () => {
@@ -479,6 +489,7 @@
                 document.getElementById('modal-backdrop').classList.add('visible');
             };
             const hideModal = () => document.getElementById('modal-backdrop').classList.remove('visible');
+            window.hideModal = hideModal; // Torna a função global
             
             const calcularPontosTotais = () => {
                 const season = getCurrentSeason();
