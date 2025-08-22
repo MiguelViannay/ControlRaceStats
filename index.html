@@ -143,7 +143,7 @@
             <!-- PÁGINA: INÍCIO / TEMPORADA -->
             <div id="page-inicio" class="page active">
                 <div id="selecao-temporada-view">
-                    <h2>Gerenciador de Temporadas</h2>
+                    <h2>Minhas Temporadas</h2>
                     <div id="lista-temporadas" class="card"></div>
                     <button id="btn-nova-temporada" class="btn btn-principal">Criar Nova Temporada</button>
                 </div>
@@ -211,10 +211,20 @@
                 </div>
             </div>
             
-            <!-- PÁGINA: NOTÍCIAS -->
-            <div id="page-noticias" class="page">
-                <h2>Notícias</h2>
-                <div id="lista-noticias"></div>
+            <!-- PÁGINA: AMIGOS -->
+            <div id="page-amigos" class="page">
+                <h2>Temporadas de Amigos</h2>
+                <div class="card">
+                    <h3>Carregar Temporada</h3>
+                    <form id="form-load-shared">
+                        <div class="input-group">
+                            <label for="shared-code">Cole o código da temporada aqui</label>
+                            <textarea id="shared-code" rows="3" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-principal">Carregar</button>
+                    </form>
+                </div>
+                <div id="lista-temporadas-amigos" class="card"></div>
             </div>
 
             <!-- PÁGINA: ADMIN -->
@@ -268,7 +278,7 @@
                 </div>
                  <div class="card">
                     <h3>Compartilhar</h3>
-                    <button id="btn-share" class="btn btn-principal" style="background-color: var(--cor-azul);">Compartilhar Temporada (Modo Leitura)</button>
+                    <button id="btn-share" class="btn btn-principal" style="background-color: var(--cor-azul);">Gerar Código de Compartilhamento</button>
                 </div>
             </div>
         </main>
@@ -277,7 +287,7 @@
             <button class="nav-button active" data-page="inicio"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>Temporada</button>
             <button class="nav-button" data-page="calendario"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0h18M-7.5 12h1.5" /></svg>Calendário</button>
             <button class="nav-button" data-page="classificacao"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" /></svg>Tabela</button>
-            <button class="nav-button" data-page="noticias"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 0 1-2.25 2.25M16.5 7.5V18a2.25 2.25 0 0 0 2.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 0 0 2.25 2.25h13.5M6 7.5h3v3H6v-3Z" /></svg>Notícias</button>
+            <button class="nav-button" data-page="amigos"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m-7.289 2.72a3 3 0 0 1-4.682-2.72 9.094 9.094 0 0 1 3.741-.479m7.289 2.72-7.289-2.72m0 0a3 3 0 1 0-4.682 2.72M12 18.72v-2.72c0-.956.22-1.859.62-2.688M12 18.72c-1.018 0-1.992-.206-2.87-.577m2.87.577a3 3 0 1 1 4.682-2.72M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>Amigos</button>
             <button class="nav-button" data-page="admin"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93.398.164.855.142 1.205-.108l.737-.527c.446-.318.99-.318 1.436 0l.775.775c.445.446.445 1.188 0 1.634l-.527.737c-.25.35-.272.806-.108 1.204.165.397.505.71.93.78l.893.15c.543.09.94.56.94 1.11v1.093c0 .55-.397 1.02-.94 1.11l-.893.149c-.425.07-.765.383-.93.78-.165.398-.143.854.108 1.204l.527.738c.446.445.446 1.187 0 1.634l-.775.775c-.446.446-1.188.446-1.634 0l-.738-.527c-.35-.25-.806-.272-1.204-.108-.397.165-.71.505-.78.93l-.15.893c-.09.543-.56.94-1.11.94h-1.093c-.55 0-1.02-.397-1.11-.94l-.149-.893c-.07-.425-.383-.765-.78-.93-.398-.165-.854-.143-1.204.108l-.738.527c-.445.446-1.187.446-1.634 0l-.775-.775c-.446-.445-.446-1.187 0-1.634l.527-.738c.25-.35.272-.806.108-1.204-.165-.397-.505-.71-.93-.78l-.894-.15c-.542-.09-.94-.56-.94-1.11v-1.093c0-.55.398-1.02.94-1.11l.894-.149c.424-.07.764-.383.93-.78.165-.398.143-.854-.108-1.204l-.527-.738c-.446-.445-.446-1.187 0-1.634l.775-.775c.446-.446 1.188-.446 1.634 0l.738.527c.35.25.806.272 1.204.108.397-.165.71-.505.78-.93l.15-.893Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>Admin</button>
         </nav>
     </div>
@@ -289,9 +299,10 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const APP_STORAGE_KEY = 'viannayRaceApp_v5';
+            const APP_STORAGE_KEY = 'viannayRaceApp_v6';
             let state = {};
             let isReadOnly = false;
+            let viewedSeason = null;
             let teamChart = null;
 
             const createNewSeason = (nome) => ({
@@ -314,7 +325,6 @@
             });
 
             const saveState = () => {
-                if (isReadOnly) return;
                 try {
                     localStorage.setItem(APP_STORAGE_KEY, JSON.stringify(state));
                 } catch (e) {
@@ -326,11 +336,15 @@
                 if (savedState) {
                     state = JSON.parse(savedState);
                 } else {
-                    state = { seasons: {}, currentSeasonId: null };
+                    state = { seasons: {}, sharedSeasons: {}, currentSeasonId: null };
                 }
+                 if (!state.sharedSeasons) state.sharedSeasons = {};
             };
 
-            const getCurrentSeason = () => state.currentSeasonId ? state.seasons[state.currentSeasonId] : null;
+            const getCurrentSeason = () => {
+                if (isReadOnly) return viewedSeason;
+                return state.currentSeasonId ? state.seasons[state.currentSeasonId] : null;
+            }
 
             const applyTheme = (theme) => {
                 const root = document.documentElement;
@@ -375,6 +389,7 @@
                     renderClassificacao();
                     renderNoticias();
                     renderAdminPage();
+                    renderAmigosPage();
                 } else {
                     document.getElementById('dashboard-temporada-view').classList.add('hidden');
                     document.getElementById('selecao-temporada-view').classList.remove('hidden');
@@ -547,6 +562,21 @@
                 document.getElementById('ponto-volta-rapida').value = season.pontuacao.voltaRapida;
             };
 
+            const renderAmigosPage = () => {
+                const lista = document.getElementById('lista-temporadas-amigos');
+                const sharedIds = Object.keys(state.sharedSeasons);
+                lista.innerHTML = sharedIds.length === 0 ? '<p>Nenhuma temporada de amigo carregada.</p>' : '<h3>Temporadas Salvas</h3>';
+                sharedIds.forEach(id => {
+                    const season = state.sharedSeasons[id];
+                    lista.innerHTML += `
+                        <div class="lista-item" style="cursor:pointer;" data-action="select-shared-season" data-id="${id}">
+                            <div class="item-info"><p>${season.nome}</p></div>
+                            <button class="action-btn" data-action="delete-shared-season" data-id="${id}">🗑️</button>
+                        </div>
+                    `;
+                });
+            };
+
             const showModal = (content) => {
                 document.getElementById('modal-content').innerHTML = content;
                 document.getElementById('modal-backdrop').classList.add('visible');
@@ -687,14 +717,14 @@
             });
 
             document.getElementById('btn-mudar-temporada').addEventListener('click', () => {
-                if (isReadOnly) {
-                    window.location.hash = '';
-                    window.location.reload();
-                } else {
-                    state.currentSeasonId = null;
-                    saveState();
-                    render();
-                }
+                isReadOnly = false;
+                viewedSeason = null;
+                document.querySelector('[data-page="admin"]').classList.remove('hidden');
+                document.getElementById('readonly-banner').classList.add('hidden');
+                
+                state.currentSeasonId = null;
+                saveState();
+                render();
             });
 
             document.getElementById('main-content').addEventListener('click', e => {
@@ -706,11 +736,25 @@
 
                 switch(action) {
                     case 'select-season': state.currentSeasonId = id; saveState(); render(); break;
+                    case 'select-shared-season':
+                        isReadOnly = true;
+                        viewedSeason = state.sharedSeasons[id];
+                        document.querySelector('[data-page="admin"]').classList.add('hidden');
+                        document.getElementById('readonly-banner').classList.remove('hidden');
+                        document.querySelector('.nav-button[data-page="inicio"]').click();
+                        render();
+                        break;
                     case 'delete-season':
                         if (confirm(`Tem certeza que deseja apagar a temporada "${state.seasons[id].nome}"? A ação não pode ser desfeita.`)) {
                             delete state.seasons[id];
                             if (state.currentSeasonId == id) state.currentSeasonId = null;
                             saveState(); render();
+                        }
+                        break;
+                    case 'delete-shared-season':
+                        if (confirm(`Tem certeza que deseja remover a temporada "${state.sharedSeasons[id].nome}" da sua lista?`)) {
+                            delete state.sharedSeasons[id];
+                            saveState(); renderAmigosPage();
                         }
                         break;
                     case 'delete':
@@ -967,57 +1011,55 @@
                     const jsonString = JSON.stringify(season);
                     const compressed = pako.deflate(jsonString, { to: 'string' });
                     const encoded = btoa(compressed);
-                    const url = `${window.location.origin}${window.location.pathname}#data=${encoded}`;
                     
-                    showModal(`<h3>Compartilhe sua Temporada</h3><p>Envie este link para seus amigos. Eles poderão ver tudo, mas não poderão editar.</p><textarea rows="3" style="width:100%; margin-top:10px; font-size: 0.8rem;" readonly>${url}</textarea><button id="copy-link-btn" class="btn btn-principal" style="margin-top:10px;">Copiar Link</button>`);
+                    showModal(`<h3>Código de Compartilhamento</h3><p>Envie este código para seus amigos.</p><textarea rows="4" style="width:100%; margin-top:10px; font-size: 0.8rem;" readonly>${encoded}</textarea><button id="copy-link-btn" class="btn btn-principal" style="margin-top:10px;">Copiar Código</button>`);
                     
                     document.getElementById('copy-link-btn').addEventListener('click', (e) => {
-                        navigator.clipboard.writeText(url).then(() => {
+                        navigator.clipboard.writeText(encoded).then(() => {
                             e.target.textContent = 'Copiado!';
                         }).catch(err => {
-                            alert('Falha ao copiar o link.');
+                            alert('Falha ao copiar o código.');
                         });
                     });
                 } catch (err) {
-                    alert('Erro ao gerar o link de compartilhamento.');
+                    alert('Erro ao gerar o código de compartilhamento.');
                     console.error(err);
+                }
+            });
+            
+            document.getElementById('form-load-shared').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const code = document.getElementById('shared-code').value;
+                try {
+                    const compressed = atob(code);
+                    const jsonString = pako.inflate(compressed, { to: 'string' });
+                    const sharedSeason = JSON.parse(jsonString);
+                    
+                    if (!sharedSeason.id || !sharedSeason.nome) throw new Error("Código inválido.");
+
+                    state.sharedSeasons[sharedSeason.id] = sharedSeason;
+                    saveState();
+                    renderAmigosPage();
+                    e.target.reset();
+                    alert(`Temporada "${sharedSeason.nome}" carregada com sucesso!`);
+                } catch (err) {
+                    alert('Código inválido ou corrompido. Verifique se copiou corretamente.');
+                    console.error("Erro ao carregar dados compartilhados:", err);
                 }
             });
             
             document.getElementById('modal-backdrop').addEventListener('click', e => { if (e.target.id === 'modal-backdrop') hideModal(); });
             
-            const checkForShareData = () => {
-                if (window.location.hash.startsWith('#data=')) {
-                    try {
-                        const encoded = window.location.hash.substring(6);
-                        const compressed = atob(encoded);
-                        const jsonString = pako.inflate(compressed, { to: 'string' });
-                        const sharedSeason = JSON.parse(jsonString);
-                        
-                        isReadOnly = true;
-                        state.seasons = { [sharedSeason.id]: sharedSeason };
-                        state.currentSeasonId = sharedSeason.id;
-                        
-                        document.querySelector('[data-page="admin"]').classList.add('hidden');
-                        document.getElementById('readonly-banner').classList.remove('hidden');
-                        document.getElementById('btn-mudar-temporada').textContent = "Sair";
-                        render();
-                        return true;
-                    } catch (err) {
-                        console.error("Erro ao carregar dados compartilhados:", err);
-                        window.location.hash = ''; // Limpa a URL se os dados forem inválidos
-                        return false;
-                    }
-                }
-                return false;
+            const checkInitialState = () => {
+                loadState();
+                document.querySelector('.nav-button[data-page="admin"]').classList.remove('hidden');
+                document.getElementById('readonly-banner').classList.add('hidden');
+                render();
             };
 
-            if (!checkForShareData()) {
-                loadState();
-                render();
-            }
+            checkInitialState();
             
-            if ('serviceWorker' in navigator && !isReadOnly) {
+            if ('serviceWorker' in navigator) {
                 window.addEventListener('load', () => {
                     navigator.serviceWorker.register('./sw.js').then(reg => console.log('SW registered.'), err => console.log('SW registration failed: ', err));
                 });
