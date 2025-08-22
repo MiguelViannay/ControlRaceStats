@@ -32,10 +32,7 @@
         header {
             background-color: var(--cor-preta); color: var(--cor-branca); padding: 15px 20px;
             text-align: center; font-size: 1.2rem; font-weight: bold; flex-shrink: 0;
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-            background-size: cover; background-position: center;
         }
-        #header-logo { max-height: 30px; max-width: 30px; }
         main { flex-grow: 1; overflow-y: auto; padding: 20px; }
         nav {
             display: flex; justify-content: space-around; background-color: var(--cor-branca);
@@ -44,7 +41,7 @@
         .nav-button {
             background: none; border: none; color: var(--cor-cinza-escuro); display: flex;
             flex-direction: column; align-items: center; font-size: 0.7rem;
-            cursor: pointer; transition: color 0.2s; width: 25%;
+            cursor: pointer; transition: color 0.2s; width: 20%;
         }
         .nav-button.active { color: var(--cor-destaque); font-weight: bold; }
         .nav-button svg { width: 24px; height: 24px; margin-bottom: 4px; }
@@ -113,10 +110,6 @@
         .status-espera { background-color: var(--cor-cinza-escuro); }
         .status-ativa { background-color: var(--cor-aviso); color: var(--cor-preta); }
         .status-finalizada { background-color: var(--cor-sucesso); }
-        .sprint-badge {
-            background-color: var(--cor-destaque); color: white; font-size: 0.6rem;
-            padding: 2px 6px; border-radius: 8px; margin-left: 8px; font-weight: bold;
-        }
         .tabs { display: flex; border-bottom: 1px solid #ccc; margin-bottom: 16px; }
         .tab-button {
             padding: 10px 16px; cursor: pointer; background: none; border: none;
@@ -129,15 +122,12 @@
 </head>
 <body>
     <div id="app-container">
-        <header>
-            <img id="header-logo" src="" alt="Logo" class="hidden">
-            <span id="header-title">TV Viannay Race Esporte</span>
-        </header>
+        <header>TV Viannay Race Esporte</header>
         <main id="main-content">
             <!-- PÁGINA: INÍCIO / TEMPORADA -->
             <div id="page-inicio" class="page active">
                 <div id="selecao-temporada-view">
-                    <h2>Minhas Temporadas</h2>
+                    <h2>Gerenciador de Temporadas</h2>
                     <div id="lista-temporadas" class="card"></div>
                     <button id="btn-nova-temporada" class="btn btn-principal">Criar Nova Temporada</button>
                 </div>
@@ -205,6 +195,12 @@
                 </div>
             </div>
             
+            <!-- PÁGINA: NOTÍCIAS -->
+            <div id="page-noticias" class="page">
+                <h2>Notícias</h2>
+                <div id="lista-noticias"></div>
+            </div>
+
             <!-- PÁGINA: ADMIN -->
             <div id="page-admin" class="page">
                 <h2>Administração</h2>
@@ -216,20 +212,6 @@
                         <button class="btn btn-secundario" data-action="add-corrida">Adicionar Etapa</button>
                         <button class="btn btn-secundario" data-action="add-noticia">Publicar Notícia</button>
                     </div>
-                </div>
-                <div class="card">
-                    <h3>Personalização da Temporada</h3>
-                    <form id="form-theme">
-                        <div class="input-group"><label>Título do Cabeçalho</label><input type="text" id="theme-header-title"></div>
-                        <div class="input-group"><label>URL do Logo</label><input type="url" id="theme-header-logo" placeholder="https://..."></div>
-                        <div class="input-group"><label>Banner do Cabeçalho (URL ou Cor)</label><input type="text" id="theme-header-banner" placeholder="https://... ou #código"></div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
-                            <div class="input-group"><label>Cor Destaque</label><input type="color" id="theme-cor-destaque"></div>
-                            <div class="input-group"><label>Cor Cabeçalho</label><input type="color" id="theme-cor-preta"></div>
-                            <div class="input-group"><label>Cor Fundo</label><input type="color" id="theme-cor-cinza"></div>
-                        </div>
-                        <button type="submit" class="btn btn-sucesso">Salvar Tema</button>
-                    </form>
                 </div>
                 <div class="card">
                     <h3>Configuração de Pontos</h3>
@@ -248,8 +230,8 @@
                         
                         <h4 style="margin-top:20px;">Ponto Extra</h4>
                         <div class="input-group">
-                            <label for="ponto-volta-rapida">Pontos por Volta Mais Rápida (Top 10)</label>
-                            <input type="number" id="ponto-volta-rapida" min="0">
+                            <label for="ponto-volta-rapida">Pontos por Volta Mais Rápida</label>
+                            <input type="number" id="ponto-volta-rapida" min="0" value="1">
                         </div>
                         <button type="submit" class="btn btn-sucesso" style="margin-top: 20px;">Salvar Pontuação</button>
                     </form>
@@ -261,7 +243,8 @@
             <button class="nav-button active" data-page="inicio"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>Temporada</button>
             <button class="nav-button" data-page="calendario"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0h18M-7.5 12h1.5" /></svg>Calendário</button>
             <button class="nav-button" data-page="classificacao"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" /></svg>Tabela</button>
-            <button class="nav-button" data-page="admin"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93.398.164.855.142 1.205-.108l.737-.527c.446-.318.99-.318 1.436 0l.775.775c.445.446.445 1.188 0 1.634l-.527.737c-.25.35-.272.806-.108 1.204.165.397.505.71.93.78l.893.15c.543.09.94.56.94 1.11v1.093c0 .55-.397 1.02-.94 1.11l-.893.149c-.425.07-.765.383-.93.78-.165.398-.143.854.108 1.204l.527.738c.446.445.446 1.187 0 1.634l-.775.775c-.446.446-1.188.446-1.634 0l-.738-.527c-.35-.25-.806-.272-1.204-.108-.397.165-.71.505-.78-.93l-.15.893c-.09.543-.56.94-1.11.94h-1.093c-.55 0-1.02-.397-1.11-.94l-.149-.893c-.07-.425-.383-.765-.78-.93-.398-.165-.854-.143-1.204.108l-.738.527c-.445.446-1.187.446-1.634 0l-.775-.775c-.446-.445-.446-1.187 0-1.634l.527-.738c.25-.35.272-.806.108-1.204-.165-.397-.505-.71-.93-.78l-.894-.15c-.542-.09-.94-.56-.94-1.11v-1.093c0-.55.398-1.02.94-1.11l.894-.149c.424-.07.764-.383.93-.78.165-.398.143-.854-.108-1.204l-.527-.738c-.446-.445-.446-1.187 0-1.634l.775-.775c.446-.446 1.188-.446 1.634 0l.738.527c.35.25.806.272 1.204.108.397-.165.71-.505.78-.93l.15-.893Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>Admin</button>
+            <button class="nav-button" data-page="noticias"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 0 1-2.25 2.25M16.5 7.5V18a2.25 2.25 0 0 0 2.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 0 0 2.25 2.25h13.5M6 7.5h3v3H6v-3Z" /></svg>Notícias</button>
+            <button class="nav-button" data-page="admin"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93.398.164.855.142 1.205-.108l.737-.527c.446-.318.99-.318 1.436 0l.775.775c.445.446.445 1.188 0 1.634l-.527.737c-.25.35-.272.806-.108 1.204.165.397.505.71.93.78l.893.15c.543.09.94.56.94 1.11v1.093c0 .55-.397 1.02-.94 1.11l-.893.149c-.425.07-.765.383-.93.78-.165.398-.143.854.108 1.204l.527.738c.446.445.446 1.187 0 1.634l-.775.775c-.446.446-1.188.446-1.634 0l-.738-.527c-.35-.25-.806-.272-1.204-.108-.397.165-.71.505-.78.93l-.15.893c-.09.543-.56.94-1.11.94h-1.093c-.55 0-1.02-.397-1.11-.94l-.149-.893c-.07-.425-.383-.765-.78-.93-.398-.165-.854-.143-1.204.108l-.738.527c-.445.446-1.187.446-1.634 0l-.775-.775c-.446-.445-.446-1.187 0-1.634l.527-.738c.25-.35.272-.806.108-1.204-.165-.397-.505-.71-.93-.78l-.894-.15c-.542-.09-.94-.56-.94-1.11v-1.093c0-.55.398-1.02.94-1.11l.894-.149c.424-.07.764-.383.93-.78.165-.398.143-.854-.108-1.204l-.527-.738c-.446-.445-.446-1.187 0-1.634l.775-.775c.446-.446 1.188-.446 1.634 0l.738.527c.35.25.806.272 1.204.108.397-.165.71-.505.78-.93l.15-.893Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>Admin</button>
         </nav>
     </div>
 
@@ -272,17 +255,13 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const APP_STORAGE_KEY = 'viannayRaceApp_v7'; // Versão incrementada para evitar conflitos
+            const APP_STORAGE_KEY = 'viannayRaceApp_v5';
             let state = {};
             let teamChart = null;
 
             const createNewSeason = (nome) => ({
                 id: Date.now(),
                 nome,
-                theme: {
-                    corDestaque: '#E53935', corPreta: '#121212', corCinza: '#F0F2F5',
-                    headerTitle: 'TV Viannay Race Esporte', headerLogo: '', headerBanner: ''
-                },
                 equipes: [],
                 pilotos: [],
                 calendario: [],
@@ -300,6 +279,7 @@
                     localStorage.setItem(APP_STORAGE_KEY, JSON.stringify(state));
                 } catch (e) {
                     console.error("Erro ao salvar o estado:", e);
+                    alert("Não foi possível salvar os dados. O armazenamento pode estar cheio.");
                 }
             };
             const loadState = () => {
@@ -307,58 +287,27 @@
                 if (savedState) {
                     state = JSON.parse(savedState);
                 } else {
-                    state = { seasons: {}, currentSeasonId: null };
+                    state = {
+                        seasons: {},
+                        currentSeasonId: null
+                    };
                 }
             };
 
-            const getCurrentSeason = () => {
-                return state.currentSeasonId ? state.seasons[state.currentSeasonId] : null;
-            }
-
-            const applyTheme = (theme) => {
-                const root = document.documentElement;
-                root.style.setProperty('--cor-destaque', theme.corDestaque);
-                root.style.setProperty('--cor-preta', theme.corPreta);
-                root.style.setProperty('--cor-cinza', theme.corCinza);
-
-                const header = document.querySelector('header');
-                const headerTitle = document.getElementById('header-title');
-                const headerLogo = document.getElementById('header-logo');
-
-                headerTitle.textContent = theme.headerTitle || 'TV Viannay Race Esporte';
-                if (theme.headerLogo) {
-                    headerLogo.src = theme.headerLogo;
-                    headerLogo.classList.remove('hidden');
-                } else {
-                    headerLogo.classList.add('hidden');
-                }
-
-                if (theme.headerBanner) {
-                    if (theme.headerBanner.startsWith('#') || theme.headerBanner.startsWith('rgb')) {
-                        header.style.backgroundImage = 'none';
-                        header.style.backgroundColor = theme.headerBanner;
-                    } else {
-                        header.style.backgroundImage = `url(${theme.headerBanner})`;
-                    }
-                } else {
-                    header.style.backgroundImage = 'none';
-                    header.style.backgroundColor = 'var(--cor-preta)';
-                }
-            };
+            const getCurrentSeason = () => state.currentSeasonId ? state.seasons[state.currentSeasonId] : null;
 
             const render = () => {
                 const currentSeason = getCurrentSeason();
                 if (currentSeason) {
-                    applyTheme(currentSeason.theme);
                     document.getElementById('selecao-temporada-view').classList.add('hidden');
                     document.getElementById('dashboard-temporada-view').classList.remove('hidden');
                     document.getElementById('temporada-nome').textContent = currentSeason.nome;
                     renderDashboard();
                     renderCalendario();
                     renderClassificacao();
+                    renderNoticias();
                     renderAdminPage();
                 } else {
-                    applyTheme(createNewSeason('').theme); // Reset theme
                     document.getElementById('dashboard-temporada-view').classList.add('hidden');
                     document.getElementById('selecao-temporada-view').classList.remove('hidden');
                     renderListaTemporadas();
@@ -368,7 +317,11 @@
             const renderListaTemporadas = () => {
                 const lista = document.getElementById('lista-temporadas');
                 const seasonIds = Object.keys(state.seasons);
-                lista.innerHTML = seasonIds.length === 0 ? '<p>Nenhuma temporada criada.</p>' : '<h3>Selecione uma Temporada</h3>';
+                if (seasonIds.length === 0) {
+                    lista.innerHTML = '<p>Nenhuma temporada criada.</p>';
+                    return;
+                }
+                lista.innerHTML = '<h3>Selecione uma Temporada</h3>';
                 seasonIds.forEach(id => {
                     const season = state.seasons[id];
                     lista.innerHTML += `
@@ -383,18 +336,24 @@
             const renderDashboard = () => {
                 const season = getCurrentSeason();
                 if (!season) return;
+
                 const renderMiniLista = (containerId, items, renderFn) => {
                     const container = document.getElementById(containerId);
                     container.innerHTML = items.length ? '' : '<p>Nenhum item.</p>';
                     items.forEach(item => container.innerHTML += renderFn(item));
                 };
-                renderMiniLista('dashboard-lista-equipes', season.equipes, (e) => `<div class="lista-item"><div class="item-cor" style="background-color: ${e.cor};"></div><p>${e.nome}</p></div>`);
+
+                renderMiniLista('dashboard-lista-equipes', season.equipes, (e) => `
+                    <div class="lista-item"><div class="item-cor" style="background-color: ${e.cor};"></div><p>${e.nome}</p></div>`);
+                
                 renderMiniLista('dashboard-lista-pilotos', season.pilotos, (p) => {
-                    const equipe = season.equipes.find(e => Number(e.id) === Number(p.equipeId));
+                    const equipe = season.equipes.find(e => e.id === p.equipeId);
                     return `<div class="lista-item"><div class="item-cor" style="background-color: ${equipe?.cor || '#ccc'};"></div><p>${p.nome}</p></div>`;
                 });
+
                 const ultimasNoticias = [...season.noticias].sort((a, b) => b.data - a.data).slice(0, 3);
-                renderMiniLista('dashboard-lista-noticias', ultimasNoticias, (n) => `<div class="lista-item"><div class="item-info"><p>${n.titulo}</p><span class="text-sm">${new Date(n.data).toLocaleDateString()}</span></div></div>`);
+                renderMiniLista('dashboard-lista-noticias', ultimasNoticias, (n) => `
+                    <div class="lista-item"><div class="item-info"><p>${n.titulo}</p><span class="text-sm">${new Date(n.data).toLocaleDateString()}</span></div></div>`);
             };
             
             const renderCalendario = () => {
@@ -411,13 +370,7 @@
                             <div style="display: flex; align-items: center; justify-content: space-between;">
                                 <div style="display: flex; align-items: center;">
                                     <img src="${c.bandeira || 'https://placehold.co/40x40/eee/ccc?text=?'}" alt="Bandeira" class="item-avatar" style="border-radius: 4px;">
-                                    <div>
-                                        <p style="font-weight: bold; display: flex; align-items: center;">
-                                            ${c.nome}
-                                            ${c.isSprint ? '<span class="sprint-badge">SPRINT</span>' : ''}
-                                        </p>
-                                        <span class="status status-${c.status}">${c.status.toUpperCase()}</span>
-                                    </div>
+                                    <div><p style="font-weight: bold;">${c.nome}</p><span class="status status-${c.status}">${c.status.toUpperCase()}</span></div>
                                 </div>
                                 <div class="action-buttons">
                                     <button class="action-btn" data-action="edit-corrida" data-id="${c.id}">✏️</button>
@@ -440,7 +393,7 @@
 
                 const pilotosOrdenados = [...season.pilotos].sort((a,b) => b.pontos - a.pontos);
                 document.getElementById('tabela-pilotos').innerHTML = pilotosOrdenados.map((p, index) => {
-                    const equipe = season.equipes.find(e => Number(e.id) === Number(p.equipeId));
+                    const equipe = season.equipes.find(e => e.id === p.equipeId);
                     return `<tr data-action="ver-piloto" data-id="${p.id}" style="cursor: pointer;">
                         <td class="pos">${index + 1}</td>
                         <td>
@@ -455,7 +408,7 @@
 
                 const pontosEquipes = season.equipes.map(eq => ({
                     ...eq,
-                    pontos: season.pilotos.filter(p => Number(p.equipeId) === Number(eq.id)).reduce((acc, p) => acc + p.pontos, 0)
+                    pontos: season.pilotos.filter(p => p.equipeId === eq.id).reduce((acc, p) => acc + p.pontos, 0)
                 })).sort((a,b) => b.pontos - a.pontos);
                 document.getElementById('tabela-equipes').innerHTML = pontosEquipes.map((eq, index) => `
                      <tr data-action="ver-equipe" data-id="${eq.id}" style="cursor: pointer;">
@@ -465,7 +418,7 @@
 
                 const fasOrdenados = [...season.pilotos].sort((a,b) => b.fas - a.fas);
                 document.getElementById('tabela-fas').innerHTML = fasOrdenados.map((p, index) => {
-                    const equipe = season.equipes.find(e => Number(e.id) === Number(p.equipeId));
+                    const equipe = season.equipes.find(e => e.id === p.equipeId);
                     return `<tr data-action="ver-piloto" data-id="${p.id}" style="cursor: pointer;">
                         <td class="pos">${index + 1}</td>
                         <td>
@@ -478,24 +431,40 @@
                         <td style="font-weight: bold; text-align: right;">${p.fas.toLocaleString('pt-BR')}</td></tr>`;
                 }).join('');
             };
-            
+
+            const renderNoticias = () => {
+                const lista = document.getElementById('lista-noticias');
+                const season = getCurrentSeason();
+                if (!season) {
+                    lista.innerHTML = '<p>Selecione uma temporada para ver as notícias.</p>';
+                    return;
+                }
+                lista.innerHTML = season.noticias.length ? '' : '<p>Nenhuma notícia publicada.</p>';
+                [...season.noticias].sort((a, b) => b.data - a.data).forEach(n => {
+                    const pilotos = n.pilotosMarcados?.map(pid => season.pilotos.find(p => p.id == pid)?.nome).filter(Boolean).join(', ');
+                    const equipes = n.equipesMarcadas?.map(eid => season.equipes.find(e => e.id == eid)?.nome).filter(Boolean).join(', ');
+                    lista.innerHTML += `
+                        <div class="card">
+                            <div style="display:flex; justify-content: space-between; align-items: start;">
+                                <div><h4>${n.titulo}</h4><p style="font-size: 0.8rem; color: #555; margin-bottom: 10px;">${new Date(n.data).toLocaleDateString()}</p></div>
+                                <button class="action-btn" data-action="delete" data-id="${n.id}" data-tipo="noticia">🗑️</button>
+                            </div>
+                            ${n.imgUrl ? `<img src="${n.imgUrl}" class="noticia-img" alt="Imagem da notícia">` : ''}
+                            <p>${n.conteudo}</p>
+                            ${pilotos ? `<p style="font-size: 0.8rem; color: #888; margin-top: 10px;"><i>Pilotos: ${pilotos}</i></p>` : ''}
+                            ${equipes ? `<p style="font-size: 0.8rem; color: #888; margin-top: 5px;"><i>Equipes: ${equipes}</i></p>` : ''}
+                        </div>`;
+                });
+            };
+
             const renderAdminPage = () => {
                 const season = getCurrentSeason();
                 if (!season) return;
-                
-                const theme = season.theme;
-                document.getElementById('theme-header-title').value = theme.headerTitle;
-                document.getElementById('theme-header-logo').value = theme.headerLogo;
-                document.getElementById('theme-header-banner').value = theme.headerBanner;
-                document.getElementById('theme-cor-destaque').value = theme.corDestaque;
-                document.getElementById('theme-cor-preta').value = theme.corPreta;
-                document.getElementById('theme-cor-cinza').value = theme.corCinza;
-
                 const renderPontosInputs = (tipo) => {
                     const container = document.getElementById(`pontos-${tipo}-container`);
                     const pontos = season.pontuacao[tipo];
                     container.innerHTML = '';
-                    Object.keys(pontos).sort((a, b) => Number(a) - Number(b)).forEach(pos => {
+                    Object.keys(pontos).sort((a, b) => a - b).forEach(pos => {
                         container.innerHTML += `<div class="input-group" style="display: flex; align-items: center; gap: 10px;"><label style="flex-basis: 60px;">${pos}º:</label><input type="number" value="${pontos[pos]}" data-tipo="${tipo}" data-pos="${pos}" class="ponto-input" style="flex-grow: 1;"><button type="button" class="btn-remove-pos" data-tipo="${tipo}" data-pos="${pos}">X</button></div>`;
                     });
                 };
@@ -519,29 +488,10 @@
                     if (corrida.status === 'finalizada' && corrida.resultados) {
                         const res = corrida.resultados;
                         const getPiloto = id => season.pilotos.find(p => p.id == id);
-                        
-                        Object.entries(res.grid).forEach(([pos, pId]) => { 
-                            const p = getPiloto(pId); 
-                            if (p && season.pontuacao.quali[pos]) {
-                                p.pontos += (season.pontuacao.quali[pos] || 0);
-                            }
-                        });
-
-                        if (corrida.isSprint) {
-                            Object.entries(res.sprint).forEach(([pos, pId]) => { const p = getPiloto(pId); if (p && pId !== 'DNF') p.pontos += (season.pontuacao.sprint[pos] || 0); });
-                        }
-
+                        Object.entries(res.quali).forEach(([pos, pId]) => { const p = getPiloto(pId); if (p) p.pontos += (season.pontuacao.quali[pos] || 0); });
+                        Object.entries(res.sprint).forEach(([pos, pId]) => { const p = getPiloto(pId); if (p && pId !== 'DNF') p.pontos += (season.pontuacao.sprint[pos] || 0); });
                         Object.entries(res.corrida).forEach(([pos, pId]) => { const p = getPiloto(pId); if (p && pId !== 'DNF') p.pontos += (season.pontuacao.corrida[pos] || 0); });
-                        
-                        if(res.voltaRapida) { 
-                            const p = getPiloto(res.voltaRapida); 
-                            if(p) {
-                                const posCorrida = Object.keys(res.corrida).find(pos => res.corrida[pos] == res.voltaRapida);
-                                if (posCorrida && posCorrida <= 10) {
-                                    p.pontos += (season.pontuacao.voltaRapida || 0);
-                                }
-                            }
-                        }
+                        if(res.voltaRapida) { const p = getPiloto(res.voltaRapida); if(p) p.pontos += (season.pontuacao.voltaRapida || 0); }
                     }
                 });
             };
@@ -552,21 +502,19 @@
                 const totalPilotos = season.pilotos.length;
                 if (totalPilotos === 0) return;
 
+                // Impacto por resultado de corrida
                 if(resultados) {
                     season.pilotos.forEach(piloto => {
-                        const posGrid = Object.keys(resultados.grid).find(pos => resultados.grid[pos] == piloto.id);
                         const posCorrida = Object.keys(resultados.corrida).find(pos => resultados.corrida[pos] == piloto.id);
-                        
-                        if(posGrid) piloto.fas += Math.floor((totalPilotos - parseInt(posGrid) + 1) * 5);
-
                         if (posCorrida && resultados.corrida[posCorrida] !== 'DNF') {
                             piloto.fas += Math.floor((totalPilotos - parseInt(posCorrida) + 1) * 50 * (Math.random() * 0.5 + 0.8));
                         } else {
-                            piloto.fas -= Math.floor(Math.random() * 100);
+                            piloto.fas -= Math.floor(Math.random() * 50); // Penalidade por não pontuar ou DNF
                         }
                     });
                 }
 
+                // Impacto por notícia
                 if (noticia) {
                     const { impacto, pilotosMarcados } = noticia;
                     const fanChange = { 'positivo': 500, 'neutro': 50, 'negativo': -350 };
@@ -576,17 +524,19 @@
                     });
                 }
 
+                // Garantir que fãs não sejam negativos
                 season.pilotos.forEach(piloto => {
                     if (piloto.fas < 0) piloto.fas = 0;
                 });
 
+                // Recalcular Reputação
                 const pilotosOrdenados = [...season.pilotos].sort((a, b) => b.pontos - a.pontos);
                 const rankingPilotos = {};
                 pilotosOrdenados.forEach((p, i) => rankingPilotos[p.id] = i + 1);
                 
                 const pontosEquipes = season.equipes.map(eq => ({
                     id: eq.id,
-                    pontos: season.pilotos.filter(p => Number(p.equipeId) === Number(eq.id)).reduce((acc, p) => acc + p.pontos, 0)
+                    pontos: season.pilotos.filter(p => p.equipeId === eq.id).reduce((acc, p) => acc + p.pontos, 0)
                 })).sort((a,b) => b.pontos - a.pontos);
                 const rankingEquipes = {};
                 pontosEquipes.forEach((eq, i) => rankingEquipes[eq.id] = i + 1);
@@ -595,7 +545,7 @@
                     const rankPiloto = rankingPilotos[piloto.id];
                     const rankEquipe = rankingEquipes[piloto.equipeId];
                     if (!rankPiloto || !rankEquipe) {
-                        piloto.reputacao = 5.0;
+                        piloto.reputacao = 5.0; // Padrão se não houver dados
                         return;
                     }
                     
@@ -710,7 +660,7 @@
             function showEditCorridaModal(id = null) {
                 const season = getCurrentSeason();
                 const corrida = id ? season.calendario.find(c => c.id == id) : null;
-                showModal(`<h3>${corrida ? 'Editar' : 'Adicionar'} Etapa</h3><form id="form-edit-corrida" data-id="${id || ''}"><div class="input-group"><label>Nome</label><input type="text" id="corrida-nome-edit" value="${corrida?.nome || ''}" required></div><div class="input-group"><label>URL da Bandeira</label><input type="url" id="corrida-bandeira-edit" value="${corrida?.bandeira || ''}" placeholder="https://..."></div><div class="input-group" style="display:flex; align-items:center;"><input type="checkbox" id="corrida-sprint-edit" ${corrida?.isSprint ? 'checked' : ''} style="width:auto; margin-right: 10px;"><label for="corrida-sprint-edit" style="margin:0;">É uma Etapa Sprint?</label></div><button type="submit" class="btn btn-principal">Salvar</button></form>`);
+                showModal(`<h3>${corrida ? 'Editar' : 'Adicionar'} Etapa</h3><form id="form-edit-corrida" data-id="${id || ''}"><div class="input-group"><label>Nome</label><input type="text" id="corrida-nome-edit" value="${corrida?.nome || ''}" required></div><div class="input-group"><label>URL da Bandeira</label><input type="url" id="corrida-bandeira-edit" value="${corrida?.bandeira || ''}" placeholder="https://..."></div><button type="submit" class="btn btn-principal">Salvar</button></form>`);
             }
 
             function showEditNoticiaModal() {
@@ -726,35 +676,29 @@
                 const pilotoOptions = season.pilotos.map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
                 const createSelects = (type) => [...Array(season.pilotos.length)].map((_, i) => `<div class="input-group"><label>${i+1}º Lugar</label><select class="${type}-pos" data-pos="${i+1}"><option value="">--</option>${pilotoOptions}</select></div>`).join('');
                 const createRaceSelects = () => [...Array(season.pilotos.length)].map((_, i) => `<div class="input-group"><label>${i+1}º Lugar</label><select class="corrida-pos" data-pos="${i+1}"><option value="">--</option>${pilotoOptions}<option value="DNF">DNF</option></select></div>`).join('');
-                showModal(`<h3>Resultados para ${corrida.nome}</h3><form id="form-resultados" data-id="${id}"><h4>Grid de Largada / Qualificação</h4>${createSelects('grid')}<hr style="margin:20px 0">${corrida.isSprint ? `<h4>Sprint</h4>${createSelects('sprint')}<hr style="margin:20px 0">` : ''}<h4>Corrida</h4>${createRaceSelects()}<hr style="margin:20px 0"><h4>Volta Rápida</h4><div class="input-group"><select id="volta-rapida"><option value="">--</option>${pilotoOptions}</select></div><br><button type="submit" class="btn btn-sucesso">Salvar</button></form>`);
+                showModal(`<h3>Resultados para ${corrida.nome}</h3><form id="form-resultados" data-id="${id}"><h4>Grid de Largada</h4>${createSelects('grid')}<hr style="margin:20px 0"><h4>Qualificação</h4>${Object.keys(season.pontuacao.quali).map(pos => `<div class="input-group"><label>${pos}º</label><select class="quali-pos" data-pos="${pos}"><option value="">--</option>${pilotoOptions}</select></div>`).join('')}<hr style="margin:20px 0"><h4>Sprint</h4>${createSelects('sprint')}<hr style="margin:20px 0"><h4>Corrida</h4>${createRaceSelects()}<hr style="margin:20px 0"><h4>Volta Rápida</h4><div class="input-group"><select id="volta-rapida"><option value="">--</option>${pilotoOptions}</select></div><br><button type="submit" class="btn btn-sucesso">Salvar</button></form>`);
             }
 
             function showVerResultadosModal(id) {
                  const season = getCurrentSeason();
                  const corrida = season.calendario.find(c => c.id == id);
                  const res = corrida.resultados;
-                 const getNome = (pId) => (pId === 'DNF') ? 'DNF' : season.pilotos.find(p => p.id == pId)?.nome || 'N/A';
+                 const getNome = (pId) => season.pilotos.find(p => p.id == pId)?.nome || 'N/A';
                  const getPontosPilotoNaCorrida = (pilotoId) => {
-                    if (pilotoId === 'DNF') return 0;
                     let pontos = 0;
-                    Object.entries(res.grid).forEach(([pos, pId]) => { if(pId == pilotoId && season.pontuacao.quali[pos]) pontos += (season.pontuacao.quali[pos] || 0); });
-                    if (corrida.isSprint) {
-                        const sprintPos = Object.keys(res.sprint).find(pos => res.sprint[pos] == pilotoId);
-                        if (sprintPos) pontos += (season.pontuacao.sprint[sprintPos] || 0);
-                    }
+                    Object.entries(res.quali).forEach(([pos, pId]) => { if(pId == pilotoId) pontos += (season.pontuacao.quali[pos] || 0); });
+                    const sprintPos = Object.keys(res.sprint).find(pos => res.sprint[pos] == pilotoId);
+                    if (sprintPos) pontos += (season.pontuacao.sprint[sprintPos] || 0);
                     const racePos = Object.keys(res.corrida).find(pos => res.corrida[pos] == pilotoId);
                     if (racePos && res.corrida[racePos] !== 'DNF') pontos += (season.pontuacao.corrida[racePos] || 0);
-                    if(res.voltaRapida == pilotoId) {
-                        const posCorrida = Object.keys(res.corrida).find(pos => res.corrida[pos] == res.voltaRapida);
-                        if (posCorrida && posCorrida <= 10) pontos += season.pontuacao.voltaRapida;
-                    }
+                    if(res.voltaRapida == pilotoId) pontos += season.pontuacao.voltaRapida;
                     return pontos;
                  };
                  
                  let html = `<h3>Resultados - ${corrida.nome}</h3>`;
-                 html += `<h4>Corrida Principal</h4>` + Object.entries(res.corrida).sort((a,b) => Number(a[0]) - Number(b[0])).map(([pos, pId]) => `<p>${pos}º: ${getNome(pId)} ${pId !== 'DNF' ? `<strong>(+${getPontosPilotoNaCorrida(pId)} pts)</strong>` : ''}</p>`).join('');
-                 if (corrida.isSprint && Object.keys(res.sprint).length > 0) html += `<h4 style="margin-top:15px;">Sprint</h4>` + Object.entries(res.sprint).sort((a,b) => Number(a[0]) - Number(b[0])).map(([pos, pId]) => `<p>${pos}º: ${getNome(pId)}</p>`).join('');
-                 html += `<h4 style="margin-top:15px;">Grid de Largada</h4>` + Object.entries(res.grid).sort((a,b) => Number(a[0]) - Number(b[0])).map(([pos, pId]) => `<p>${pos}º: ${getNome(pId)}</p>`).join('');
+                 html += `<h4>Corrida Principal</h4>` + Object.entries(res.corrida).sort((a,b) => a[0] - b[0]).map(([pos, pId]) => `<p>${pos}º: ${getNome(pId)} ${pId !== 'DNF' ? `<strong>(+${getPontosPilotoNaCorrida(pId)} pts)</strong>` : ''}</p>`).join('');
+                 if (Object.keys(res.sprint).length > 0) html += `<h4 style="margin-top:15px;">Sprint</h4>` + Object.entries(res.sprint).sort((a,b) => a[0] - b[0]).map(([pos, pId]) => `<p>${pos}º: ${getNome(pId)}</p>`).join('');
+                 html += `<h4 style="margin-top:15px;">Qualificação</h4>` + Object.entries(res.quali).sort((a,b) => a[0] - b[0]).map(([pos, pId]) => `<p>${pos}º: ${getNome(pId)}</p>`).join('');
                  if (res.voltaRapida) html += `<p style="margin-top:10px;"><strong>Volta Rápida:</strong> ${getNome(res.voltaRapida)}</p>`;
                  html += `<br><button onclick="hideModal()" class="btn btn-secundario">Fechar</button>`;
                  showModal(html);
@@ -762,12 +706,12 @@
 
             function showVerPilotoModal(id) {
                 const season = getCurrentSeason();
-                const piloto = season.pilotos.find(p => Number(p.id) === Number(id));
-                const equipe = piloto.equipeId ? season.equipes.find(e => Number(e.id) === Number(piloto.equipeId)) : null;
-                const rank = [...season.pilotos].sort((a,b) => b.pontos - a.pontos).findIndex(p => Number(p.id) === Number(id)) + 1;
+                const piloto = season.pilotos.find(p => p.id == id);
+                const equipe = season.equipes.find(e => e.id == piloto.equipeId);
+                const rank = [...season.pilotos].sort((a,b) => b.pontos - a.pontos).findIndex(p => p.id == id) + 1;
                 let qualiPos = [], racePos = [];
                 season.calendario.filter(c => c.status === 'finalizada' && c.resultados).forEach(c => {
-                    const qp = Object.keys(c.resultados.grid).find(pos => c.resultados.grid[pos] == id);
+                    const qp = Object.keys(c.resultados.quali).find(pos => c.resultados.quali[pos] == id);
                     const rp = Object.keys(c.resultados.corrida).find(pos => c.resultados.corrida[pos] == id);
                     if (qp) qualiPos.push(parseInt(qp));
                     if (rp) racePos.push(parseInt(rp));
@@ -802,7 +746,7 @@
                     else season.pilotos.push({ id: Date.now(), pontos: 0, fas: 1000, reputacao: 5.0, ...data });
                 }
                 if (form.id === 'form-edit-corrida') {
-                    const data = { nome: form.querySelector('#corrida-nome-edit').value, bandeira: form.querySelector('#corrida-bandeira-edit').value, isSprint: form.querySelector('#corrida-sprint-edit').checked };
+                    const data = { nome: form.querySelector('#corrida-nome-edit').value, bandeira: form.querySelector('#corrida-bandeira-edit').value };
                     if (id) Object.assign(season.calendario.find(c => c.id == id), data);
                     else season.calendario.push({ id: Date.now(), status: 'espera', resultados: null, ...data });
                 }
@@ -813,11 +757,10 @@
                 }
                 if (form.id === 'form-resultados') {
                     const corrida = season.calendario.find(c => c.id == id);
-                    const resultados = { grid: {}, sprint: {}, corrida: {}, voltaRapida: null };
+                    const resultados = { grid: {}, quali: {}, sprint: {}, corrida: {}, voltaRapida: null };
                     form.querySelectorAll('.grid-pos').forEach(s => { if (s.value) resultados.grid[s.dataset.pos] = s.value; });
-                    if (corrida.isSprint) {
-                        form.querySelectorAll('.sprint-pos').forEach(s => { if (s.value) resultados.sprint[s.dataset.pos] = s.value; });
-                    }
+                    form.querySelectorAll('.quali-pos').forEach(s => { if (s.value) resultados.quali[s.dataset.pos] = s.value; });
+                    form.querySelectorAll('.sprint-pos').forEach(s => { if (s.value) resultados.sprint[s.dataset.pos] = s.value; });
                     form.querySelectorAll('.corrida-pos').forEach(s => { if (s.value) resultados.corrida[s.dataset.pos] = s.value; });
                     resultados.voltaRapida = form.querySelector('#volta-rapida').value || null;
                     corrida.resultados = resultados;
@@ -833,7 +776,6 @@
             document.getElementById('form-pontuacao').addEventListener('submit', e => {
                 e.preventDefault();
                 const season = getCurrentSeason();
-                if(!season) return;
                 document.querySelectorAll('.ponto-input').forEach(input => {
                     const { tipo, pos } = input.dataset;
                     season.pontuacao[tipo][pos] = parseInt(input.value) || 0;
@@ -843,23 +785,6 @@
                 saveState();
                 render();
                 alert('Sistema de pontuação salvo!');
-            });
-            
-            document.getElementById('form-theme').addEventListener('submit', e => {
-                e.preventDefault();
-                const season = getCurrentSeason();
-                if(!season) return;
-                season.theme = {
-                    headerTitle: document.getElementById('theme-header-title').value,
-                    headerLogo: document.getElementById('theme-header-logo').value,
-                    headerBanner: document.getElementById('theme-header-banner').value,
-                    corDestaque: document.getElementById('theme-cor-destaque').value,
-                    corPreta: document.getElementById('theme-cor-preta').value,
-                    corCinza: document.getElementById('theme-cor-cinza').value,
-                };
-                applyTheme(season.theme);
-                saveState();
-                alert('Tema salvo!');
             });
 
             document.getElementById('page-admin').addEventListener('click', e => {
@@ -892,17 +817,12 @@
                         let pontosDaCorrida = 0;
                         pilotosDaEquipeIds.forEach(pilotoId => {
                             const res = corrida.resultados;
-                            Object.entries(res.grid).forEach(([pos, pId]) => { if(pId == pilotoId && season.pontuacao.quali[pos]) pontosDaCorrida += (season.pontuacao.quali[pos] || 0); });
-                            if (corrida.isSprint) {
-                                const sprintPos = Object.keys(res.sprint).find(pos => res.sprint[pos] == pilotoId);
-                                if (sprintPos) pontosDaCorrida += (season.pontuacao.sprint[sprintPos] || 0);
-                            }
+                            Object.entries(res.quali).forEach(([pos, pId]) => { if(pId == pilotoId) pontosDaCorrida += (season.pontuacao.quali[pos] || 0); });
+                            const sprintPos = Object.keys(res.sprint).find(pos => res.sprint[pos] == pilotoId);
+                            if (sprintPos) pontosDaCorrida += (season.pontuacao.sprint[sprintPos] || 0);
                             const racePos = Object.keys(res.corrida).find(pos => res.corrida[pos] == pilotoId);
                             if (racePos && res.corrida[racePos] !== 'DNF') pontosDaCorrida += (season.pontuacao.corrida[racePos] || 0);
-                            if(res.voltaRapida == pilotoId) {
-                                const posCorrida = Object.keys(res.corrida).find(pos => res.corrida[pos] == res.voltaRapida);
-                                if (posCorrida && posCorrida <= 10) pontosDaCorrida += season.pontuacao.voltaRapida;
-                            }
+                            if(res.voltaRapida == pilotoId) pontosDaCorrida += season.pontuacao.voltaRapida;
                         });
                         pontosAcumulados += pontosDaCorrida;
                         data.push(pontosAcumulados);
@@ -917,18 +837,14 @@
             
             document.getElementById('modal-backdrop').addEventListener('click', e => { if (e.target.id === 'modal-backdrop') hideModal(); });
             
-            const initializeApp = () => {
-                loadState();
-                render();
-            };
-
-            initializeApp();
-            
             if ('serviceWorker' in navigator) {
                 window.addEventListener('load', () => {
-                    navigator.serviceWorker.register('./sw.js').then(reg => console.log('SW registered.'), err => console.log('SW registration failed: ', err));
+                    navigator.serviceWorker.register('/sw.js').then(reg => console.log('SW registered.'), err => console.log('SW registration failed: ', err));
                 });
             }
+
+            loadState();
+            render();
         });
     </script>
 </body>
