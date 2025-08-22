@@ -1048,16 +1048,14 @@
                 }
             });
             
-            document.getElementById('modal-backdrop').addEventListener('click', e => { if (e.target.id === 'modal-backdrop') hideModal(); });
+            document.getElementById('modal-backdrop').addEventListener('click', e => { if (e.target.id === 'modal-backdrop' || e.target.classList.contains('btn-close-modal')) hideModal(); });
             
-            const checkInitialState = () => {
+            const initializeApp = () => {
                 loadState();
-                document.querySelector('.nav-button[data-page="admin"]').classList.remove('hidden');
-                document.getElementById('readonly-banner').classList.add('hidden');
                 render();
             };
 
-            checkInitialState();
+            initializeApp();
             
             if ('serviceWorker' in navigator) {
                 window.addEventListener('load', () => {
