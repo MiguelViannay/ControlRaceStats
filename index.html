@@ -393,7 +393,7 @@
 
                 const pilotosOrdenados = [...season.pilotos].sort((a,b) => b.pontos - a.pontos);
                 document.getElementById('tabela-pilotos').innerHTML = pilotosOrdenados.map((p, index) => {
-                    const equipe = season.equipes.find(e => e.id === p.equipeId);
+                    const equipe = season.equipes.find(e => Number(e.id) === Number(p.equipeId));
                     return `<tr data-action="ver-piloto" data-id="${p.id}" style="cursor: pointer;">
                         <td class="pos">${index + 1}</td>
                         <td>
@@ -408,7 +408,7 @@
 
                 const pontosEquipes = season.equipes.map(eq => ({
                     ...eq,
-                    pontos: season.pilotos.filter(p => p.equipeId === eq.id).reduce((acc, p) => acc + p.pontos, 0)
+                    pontos: season.pilotos.filter(p => Number(p.equipeId) === Number(eq.id)).reduce((acc, p) => acc + p.pontos, 0)
                 })).sort((a,b) => b.pontos - a.pontos);
                 document.getElementById('tabela-equipes').innerHTML = pontosEquipes.map((eq, index) => `
                      <tr data-action="ver-equipe" data-id="${eq.id}" style="cursor: pointer;">
@@ -418,7 +418,7 @@
 
                 const fasOrdenados = [...season.pilotos].sort((a,b) => b.fas - a.fas);
                 document.getElementById('tabela-fas').innerHTML = fasOrdenados.map((p, index) => {
-                    const equipe = season.equipes.find(e => e.id === p.equipeId);
+                    const equipe = season.equipes.find(e => Number(e.id) === Number(p.equipeId));
                     return `<tr data-action="ver-piloto" data-id="${p.id}" style="cursor: pointer;">
                         <td class="pos">${index + 1}</td>
                         <td>
@@ -464,7 +464,7 @@
                     const container = document.getElementById(`pontos-${tipo}-container`);
                     const pontos = season.pontuacao[tipo];
                     container.innerHTML = '';
-                    Object.keys(pontos).sort((a, b) => a - b).forEach(pos => {
+                    Object.keys(pontos).sort((a, b) => Number(a) - Number(b)).forEach(pos => {
                         container.innerHTML += `<div class="input-group" style="display: flex; align-items: center; gap: 10px;"><label style="flex-basis: 60px;">${pos}º:</label><input type="number" value="${pontos[pos]}" data-tipo="${tipo}" data-pos="${pos}" class="ponto-input" style="flex-grow: 1;"><button type="button" class="btn-remove-pos" data-tipo="${tipo}" data-pos="${pos}">X</button></div>`;
                     });
                 };
@@ -683,8 +683,12 @@
                  const season = getCurrentSeason();
                  const corrida = season.calendario.find(c => c.id == id);
                  const res = corrida.resultados;
-                 const getNome = (pId) => season.pilotos.find(p => p.id == pId)?.nome || 'N/A';
+                 const getNome = (pId) => {
+                    if (pId === 'DNF') return 'DNF';
+                    return season.pilotos.find(p => p.id == pId)?.nome || 'N/A';
+                 }
                  const getPontosPilotoNaCorrida = (pilotoId) => {
+                    if (pilotoId === 'DNF') return 0;
                     let pontos = 0;
                     Object.entries(res.quali).forEach(([pos, pId]) => { if(pId == pilotoId) pontos += (season.pontuacao.quali[pos] || 0); });
                     const sprintPos = Object.keys(res.sprint).find(pos => res.sprint[pos] == pilotoId);
@@ -696,9 +700,9 @@
                  };
                  
                  let html = `<h3>Resultados - ${corrida.nome}</h3>`;
-                 html += `<h4>Corrida Principal</h4>` + Object.entries(res.corrida).sort((a,b) => a[0] - b[0]).map(([pos, pId]) => `<p>${pos}º: ${getNome(pId)} ${pId !== 'DNF' ? `<strong>(+${getPontosPilotoNaCorrida(pId)} pts)</strong>` : ''}</p>`).join('');
-                 if (Object.keys(res.sprint).length > 0) html += `<h4 style="margin-top:15px;">Sprint</h4>` + Object.entries(res.sprint).sort((a,b) => a[0] - b[0]).map(([pos, pId]) => `<p>${pos}º: ${getNome(pId)}</p>`).join('');
-                 html += `<h4 style="margin-top:15px;">Qualificação</h4>` + Object.entries(res.quali).sort((a,b) => a[0] - b[0]).map(([pos, pId]) => `<p>${pos}º: ${getNome(pId)}</p>`).join('');
+                 html += `<h4>Corrida Principal</h4>` + Object.entries(res.corrida).sort((a,b) => Number(a[0]) - Number(b[0])).map(([pos, pId]) => `<p>${pos}º: ${getNome(pId)} ${pId !== 'DNF' ? `<strong>(+${getPontosPilotoNaCorrida(pId)} pts)</strong>` : ''}</p>`).join('');
+                 if (Object.keys(res.sprint).length > 0) html += `<h4 style="margin-top:15px;">Sprint</h4>` + Object.entries(res.sprint).sort((a,b) => Number(a[0]) - Number(b[0])).map(([pos, pId]) => `<p>${pos}º: ${getNome(pId)}</p>`).join('');
+                 html += `<h4 style="margin-top:15px;">Qualificação</h4>` + Object.entries(res.quali).sort((a,b) => Number(a[0]) - Number(b[0])).map(([pos, pId]) => `<p>${pos}º: ${getNome(pId)}</p>`).join('');
                  if (res.voltaRapida) html += `<p style="margin-top:10px;"><strong>Volta Rápida:</strong> ${getNome(res.voltaRapida)}</p>`;
                  html += `<br><button onclick="hideModal()" class="btn btn-secundario">Fechar</button>`;
                  showModal(html);
@@ -706,9 +710,9 @@
 
             function showVerPilotoModal(id) {
                 const season = getCurrentSeason();
-                const piloto = season.pilotos.find(p => p.id == id);
-                const equipe = season.equipes.find(e => e.id == piloto.equipeId);
-                const rank = [...season.pilotos].sort((a,b) => b.pontos - a.pontos).findIndex(p => p.id == id) + 1;
+                const piloto = season.pilotos.find(p => Number(p.id) === Number(id));
+                const equipe = season.equipes.find(e => Number(e.id) === Number(piloto.equipeId));
+                const rank = [...season.pilotos].sort((a,b) => b.pontos - a.pontos).findIndex(p => Number(p.id) === Number(id)) + 1;
                 let qualiPos = [], racePos = [];
                 season.calendario.filter(c => c.status === 'finalizada' && c.resultados).forEach(c => {
                     const qp = Object.keys(c.resultados.quali).find(pos => c.resultados.quali[pos] == id);
