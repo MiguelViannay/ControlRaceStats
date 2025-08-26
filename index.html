@@ -668,6 +668,23 @@
                 showModal(`<h3>${piloto ? 'Editar' : 'Adicionar'} Piloto</h3><form id="form-edit-piloto" data-id="${id || ''}"><div class="input-group"><label>Nome</label><input type="text" id="piloto-nome" value="${piloto?.nome || ''}" required></div><div class="input-group"><label>URL da Imagem</label><input type="url" id="piloto-img" value="${piloto?.img || ''}" placeholder="https://..."></div><div class="input-group"><label>Equipe</label><select id="piloto-equipe" required>${options}</select></div><button type="submit" class="btn btn-principal">Salvar</button></form>`);
             }
 
+            window.deletePiloto = function(id) {
+                const season = getCurrentSeason();
+                if (!season) return;
+                season.pilotos = season.pilotos.filter(p => p.id != id);
+                saveState();
+                render();
+            };
+            window.deleteEquipe = function(id) {
+                const season = getCurrentSeason();
+                if (!season) return;
+                season.equipes = season.equipes.filter(e => e.id != id);
+                // Remove equipe dos pilotos
+                season.pilotos.forEach(p => { if (p.equipeId == id) p.equipeId = null; });
+                saveState();
+                render();
+            };
+
             function showEditCorridaModal(id = null) {
                 const season = getCurrentSeason();
                 const corrida = id ? season.calendario.find(c => c.id == id) : null;
