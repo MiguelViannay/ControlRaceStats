@@ -659,6 +659,7 @@
                 const equipe = id ? season.equipes.find(e => e.id == id) : null;
                 showModal(`<h3>${equipe ? 'Editar' : 'Adicionar'} Equipe</h3><form id="form-edit-equipe" data-id="${id || ''}"><div class="input-group"><label>Nome</label><input type="text" id="equipe-nome" value="${equipe?.nome || ''}" required></div><div class="input-group"><label>URL do Logo</label><input type="url" id="equipe-logo" value="${equipe?.logo || ''}" placeholder="https://..." required></div><div class="input-group"><label>Cor</label><input type="color" id="equipe-cor" value="${equipe?.cor || '#ff0000'}"></div><button type="submit" class="btn btn-principal">Salvar</button></form>`);
             }
+            window.showEditEquipeModal = showEditEquipeModal;
 
             function showEditPilotoModal(id = null) {
                 const season = getCurrentSeason();
@@ -667,6 +668,7 @@
                 const options = season.equipes.map(e => `<option value="${e.id}" ${piloto?.equipeId == e.id ? 'selected' : ''}>${e.nome}</option>`).join('');
                 showModal(`<h3>${piloto ? 'Editar' : 'Adicionar'} Piloto</h3><form id="form-edit-piloto" data-id="${id || ''}"><div class="input-group"><label>Nome</label><input type="text" id="piloto-nome" value="${piloto?.nome || ''}" required></div><div class="input-group"><label>URL da Imagem</label><input type="url" id="piloto-img" value="${piloto?.img || ''}" placeholder="https://..."></div><div class="input-group"><label>Equipe</label><select id="piloto-equipe" required>${options}</select></div><button type="submit" class="btn btn-principal">Salvar</button></form>`);
             }
+            window.showEditPilotoModal = showEditPilotoModal;
 
             window.deletePiloto = function(id) {
                 const season = getCurrentSeason();
@@ -688,8 +690,68 @@
             function showEditCorridaModal(id = null) {
                 const season = getCurrentSeason();
                 const corrida = id ? season.calendario.find(c => c.id == id) : null;
-                showModal(`<h3>${corrida ? 'Editar' : 'Adicionar'} Etapa</h3><form id="form-edit-corrida" data-id="${id || ''}"><div class="input-group"><label>Nome</label><input type="text" id="corrida-nome-edit" value="${corrida?.nome || ''}" required></div><div class="input-group"><label>URL da Bandeira</label><input type="url" id="corrida-bandeira-edit" value="${corrida?.bandeira || ''}" placeholder="https://..."></div><button type="submit" class="btn btn-principal">Salvar</button></form>`);
-            }
+                let resultadosHtml = '';
+                if (corrida && corrida.status === 'finalizada' && corrida.resultados) {
+                    const pilotoOptions = season.pilotos.map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
+                    // Grid
+                    resultadosHtml += `<h4 style="margin-top:20px;">Grid de Largada</h4>`;
+                    Object.keys(corrida.resultados.grid).forEach(pos => {
+                        resultadosHtml += `<div class="input-group"><label>${pos}º</label>
+                            <select class="grid-pos" data-pos="${pos}">
+                                <option value="">--</option>
+                                ${pilotoOptions.replace(`value="${corrida.resultados.grid[pos]}"`, `value="${corrida.resultados.grid[pos]}" selected`)}
+                            </select>
+                        </div>`;
+                    });
+                    // Quali
+                    resultadosHtml += `<h4 style="margin-top:20px;">Qualificação</h4>`;
+                    Object.keys(corrida.resultados.quali).forEach(pos => {
+                        resultadosHtml += `<div class="input-group"><label>${pos}º</label>
+                            <select class="quali-pos" data-pos="${pos}">
+                                <option value="">--</option>
+                                ${pilotoOptions.replace(`value="${corrida.resultados.quali[pos]}"`, `value="${corrida.resultados.quali[pos]}" selected`)}
+                            </select>
+                        </div>`;
+                    });
+                    // Sprint
+                    resultadosHtml += `<h4 style="margin-top:20px;">Sprint</h4>`;
+                    Object.keys(corrida.resultados.sprint).forEach(pos => {
+                        resultadosHtml += `<div class="input-group"><label>${pos}º</label>
+                            <select class="sprint-pos" data-pos="${pos}">
+                                <option value="">--</option>
+                                ${pilotoOptions.replace(`value="${corrida.resultados.sprint[pos]}"`, `value="${corrida.resultados.sprint[pos]}" selected`)}
+                            </select>
+                        </div>`;
+                    });
+                    // Corrida
+                    resultadosHtml += `<h4 style="margin-top:20px;">Corrida</h4>`;
+                    Object.keys(corrida.resultados.corrida).forEach(pos => {
+                        resultadosHtml += `<div class="input-group"><label>${pos}º</label>
+                            <select class="corrida-pos" data-pos="${pos}">
+                                <option value="">--</option>
+                                ${pilotoOptions.replace(`value="${corrida.resultados.corrida[pos]}"`, `value="${corrida.resultados.corrida[pos]}" selected`)}
+                                <option value="DNF"${corrida.resultados.corrida[pos] === 'DNF' ? ' selected' : ''}>DNF</option>
+                            </select>
+                        </div>`;
+                    });
+                    // Volta Rápida
+                    resultadosHtml += `<h4 style="margin-top:20px;">Volta Rápida</h4>
+                        <div class="input-group">
+                            <select id="volta-rapida">
+                                <option value="">--</option>
+                                ${pilotoOptions.replace(`value="${corrida.resultados.voltaRapida}"`, `value="${corrida.resultados.voltaRapida}" selected`)}
+                            </select>
+                        </div>`;
+             }
+
+                    showModal(`<h3>${corrida ? 'Editar' : 'Adicionar'} Etapa</h3>
+                        <form id="form-edit-corrida" data-id="${id || ''}">
+                            <div class="input-group"><label>Nome</label><input type="text" id="corrida-nome-edit" value="${corrida?.nome || ''}" required></div>
+                            <div class="input-group"><label>URL da Bandeira</label><input type="url" id="corrida-bandeira-edit" value="${corrida?.bandeira || ''}" placeholder="https://..."></div>
+                            ${resultadosHtml}
+                            <button type="submit" class="btn btn-principal">Salvar</button>
+                        </form>`);
+                }
 
             function showEditNoticiaModal() {
                 const season = getCurrentSeason();
