@@ -713,25 +713,40 @@
                             </select>
                         </div>`;
                     });
-                    // Sprint
-                    resultadosHtml += `<h4 style="margin-top:20px;">Sprint</h4>`;
-                    Object.keys(corrida.resultados.sprint).forEach(pos => {
-                        resultadosHtml += `<div class="input-group"><label>${pos}º</label>
-                            <select class="sprint-pos" data-pos="${pos}">
-                                <option value="">--</option>
-                                ${pilotoOptions.replace(`value="${corrida.resultados.sprint[pos]}"`, `value="${corrida.resultados.sprint[pos]}" selected`)}
-                            </select>
-                        </div>`;
-                    });
                     // Corrida
                     resultadosHtml += `<h4 style="margin-top:20px;">Corrida</h4>`;
                     Object.keys(corrida.resultados.corrida).forEach(pos => {
+                        const valor = corrida.resultados.corrida[pos];
                         resultadosHtml += `<div class="input-group"><label>${pos}º</label>
                             <select class="corrida-pos" data-pos="${pos}">
                                 <option value="">--</option>
-                                ${pilotoOptions.replace(`value="${corrida.resultados.corrida[pos]}"`, `value="${corrida.resultados.corrida[pos]}" selected`)}
-                                <option value="DNF"${corrida.resultados.corrida[pos] === 'DNF' ? ' selected' : ''}>DNF</option>
+                                ${pilotoOptions.replace(`value="${valor}"`, `value="${valor}" selected`)}
+                                <option value="DNF"${valor === 'DNF' ? ' selected' : ''}>DNF</option>
                             </select>
+                            ${valor === 'DNF' ? `
+                                <select class="corrida-dnf-piloto" data-pos="${pos}">
+                                    <option value="">Selecione o piloto DNF</option>
+                                    ${pilotoOptions.replace(`value="${corrida.resultados.corrida['dnf_'+pos] || ''}"`, `value="${corrida.resultados.corrida['dnf_'+pos] || ''}" selected`)}
+                                </select>
+                            ` : ''}
+                        </div>`;
+                    });
+                    // Sprint
+                    resultadosHtml += `<h4 style="margin-top:20px;">Sprint</h4>`;
+                    Object.keys(corrida.resultados.sprint).forEach(pos => {
+                        const valor = corrida.resultados.sprint[pos];
+                        resultadosHtml += `<div class="input-group"><label>${pos}º</label>
+                            <select class="sprint-pos" data-pos="${pos}">
+                                <option value="">--</option>
+                                ${pilotoOptions.replace(`value="${valor}"`, `value="${valor}" selected`)}
+                                <option value="DNF"${valor === 'DNF' ? ' selected' : ''}>DNF</option>
+                            </select>
+                            ${valor === 'DNF' ? `
+                                <select class="sprint-dnf-piloto" data-pos="${pos}">
+                                    <option value="">Selecione o piloto DNF</option>
+                                    ${pilotoOptions.replace(`value="${corrida.resultados.sprint['dnf_'+pos] || ''}"`, `value="${corrida.resultados.sprint['dnf_'+pos] || ''}" selected`)}
+                                </select>
+                            ` : ''}
                         </div>`;
                     });
                     // Volta Rápida
@@ -786,7 +801,13 @@
                  };
                  
                  let html = `<h3>Resultados - ${corrida.nome}</h3>`;
-                 html += `<h4>Corrida Principal</h4>` + Object.entries(res.corrida).sort((a,b) => a[0] - b[0]).map(([pos, pId]) => `<p>${pos}º: ${getNome(pId)} ${pId !== 'DNF' ? `<strong>(+${getPontosPilotoNaCorrida(pId)} pts)</strong>` : ''}</p>`).join('');
+                 html += `<h4>Corrida Principal</h4>` + Object.entries(res.corrida).sort((a,b) => a[0] - b[0]).map(([pos, pId]) => {
+                    if (pId === 'DNF') {
+                        const dnfPilotoId = res.corrida['dnf_'+pos];
+                        return `<p>${pos}º: DNF (${getNome(dnfPilotoId)})</p>`;
+                    }
+                    return `<p>${pos}º: ${getNome(pId)} <strong>(+${getPontosPilotoNaCorrida(pId)} pts)</strong></p>`;
+                }).join('');
                  if (Object.keys(res.sprint).length > 0) html += `<h4 style="margin-top:15px;">Sprint</h4>` + Object.entries(res.sprint).sort((a,b) => a[0] - b[0]).map(([pos, pId]) => `<p>${pos}º: ${getNome(pId)}</p>`).join('');
                  html += `<h4 style="margin-top:15px;">Qualificação</h4>` + Object.entries(res.quali).sort((a,b) => a[0] - b[0]).map(([pos, pId]) => `<p>${pos}º: ${getNome(pId)}</p>`).join('');
                  if (res.voltaRapida) html += `<p style="margin-top:10px;"><strong>Volta Rápida:</strong> ${getNome(res.voltaRapida)}</p>`;
@@ -867,9 +888,46 @@
                     else season.pilotos.push({ id: Date.now(), pontos: 0, fas: 1000, reputacao: 5.0, ...data });
                 }
                 if (form.id === 'form-edit-corrida') {
-                    const data = { nome: form.querySelector('#corrida-nome-edit').value, bandeira: form.querySelector('#corrida-bandeira-edit').value };
-                    if (id) Object.assign(season.calendario.find(c => c.id == id), data);
-                    else season.calendario.push({ id: Date.now(), status: 'espera', resultados: null, ...data });
+                    const data = { 
+                        nome: form.querySelector('#corrida-nome-edit').value, 
+                        bandeira: form.querySelector('#corrida-bandeira-edit').value 
+                    };
+                    if (id) {
+                        const corrida = season.calendario.find(c => c.id == id);
+                        Object.assign(corrida, data);
+                        // Atualiza resultados se existirem campos de resultado
+                        if (corrida.status === 'finalizada' && corrida.resultados) {
+                            const resultados = { grid: {}, quali: {}, sprint: {}, corrida: {}, voltaRapida: null };
+                            form.querySelectorAll('.grid-pos').forEach(s => { if (s.value) resultados.grid[s.dataset.pos] = s.value; });
+                            form.querySelectorAll('.quali-pos').forEach(s => { if (s.value) resultados.quali[s.dataset.pos] = s.value; });
+                            // Sprint
+                            form.querySelectorAll('.sprint-pos').forEach(s => {
+                                if (s.value === 'DNF') {
+                                    const dnfPiloto = form.querySelector(`.sprint-dnf-piloto[data-pos="${s.dataset.pos}"]`)?.value;
+                                    resultados.sprint[s.dataset.pos] = 'DNF';
+                                    if (dnfPiloto) resultados.sprint['dnf_'+s.dataset.pos] = dnfPiloto;
+                                } else if (s.value) {
+                                    resultados.sprint[s.dataset.pos] = s.value;
+                                }
+                            });
+                            // Corrida
+                            form.querySelectorAll('.corrida-pos').forEach(s => {
+                                if (s.value === 'DNF') {
+                                    const dnfPiloto = form.querySelector(`.corrida-dnf-piloto[data-pos="${s.dataset.pos}"]`)?.value;
+                                    resultados.corrida[s.dataset.pos] = 'DNF';
+                                    if (dnfPiloto) resultados.corrida['dnf_'+s.dataset.pos] = dnfPiloto;
+                                } else if (s.value) {
+                                    resultados.corrida[s.dataset.pos] = s.value;
+                                }
+                            });
+                            resultados.voltaRapida = form.querySelector('#volta-rapida')?.value || null;
+                            corrida.resultados = resultados;
+                            calcularPontosTotais();
+                            atualizarFasEReputacao(resultados);
+                        }
+                    } else {
+                        season.calendario.push({ id: Date.now(), status: 'espera', resultados: null, ...data });
+                    }
                 }
                 if (form.id === 'form-add-noticia') {
                     const noticia = { id: Date.now(), titulo: form.querySelector('#noticia-titulo').value, conteudo: form.querySelector('#noticia-conteudo').value, imgUrl: form.querySelector('#noticia-img').value, impacto: form.querySelector('#noticia-impacto').value, pilotosMarcados: Array.from(form.querySelector('#noticia-pilotos').selectedOptions).map(o => o.value), equipesMarcadas: Array.from(form.querySelector('#noticia-equipes').selectedOptions).map(o => o.value), data: Date.now() };
