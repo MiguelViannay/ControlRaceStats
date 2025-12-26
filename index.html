@@ -5,11 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>TV Viannay Race Esporte</title>
     
-    <!-- === Adições para o App (PWA) === -->
     <meta name="theme-color" content="#121212"/>
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon-192x192.png">
-    <!-- =================================== -->
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -63,6 +61,7 @@
         .btn-principal { background-color: var(--cor-destaque); color: var(--cor-branca); }
         .btn-secundario { background-color: var(--cor-cinza); color: var(--cor-preta); }
         .btn-sucesso { background-color: var(--cor-sucesso); color: var(--cor-branca); }
+        .btn-aviso { background-color: var(--cor-aviso); color: var(--cor-preta); }
         .input-group { margin-bottom: 16px; }
         .input-group label { display: block; margin-bottom: 6px; font-weight: 500; }
         .input-group input, .input-group select, .input-group textarea {
@@ -84,6 +83,10 @@
         .noticia-img {
             width: 100%; height: 150px; object-fit: cover;
             border-radius: 8px; margin-bottom: 12px;
+        }
+        .social-stats {
+            display: flex; gap: 15px; margin-top: 10px; border-top: 1px solid #eee; padding-top: 8px;
+            font-size: 0.85rem; color: #666; font-weight: 500;
         }
         .modal-backdrop {
             position: fixed; inset: 0; background-color: rgba(0,0,0,0.6);
@@ -110,21 +113,21 @@
         .status-espera { background-color: var(--cor-cinza-escuro); }
         .status-ativa { background-color: var(--cor-aviso); color: var(--cor-preta); }
         .status-finalizada { background-color: var(--cor-sucesso); }
-        .tabs { display: flex; border-bottom: 1px solid #ccc; margin-bottom: 16px; }
+        .tabs { display: flex; border-bottom: 1px solid #ccc; margin-bottom: 16px; overflow-x: auto; }
         .tab-button {
             padding: 10px 16px; cursor: pointer; background: none; border: none;
-            border-bottom: 3px solid transparent; font-size: 1rem;
+            border-bottom: 3px solid transparent; font-size: 1rem; white-space: nowrap;
         }
         .tab-button.active { border-bottom-color: var(--cor-destaque); font-weight: bold; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
     <div id="app-container">
         <header>TV Viannay Race Esporte</header>
         <main id="main-content">
-            <!-- PÁGINA: INÍCIO / TEMPORADA -->
             <div id="page-inicio" class="page active">
                 <div id="selecao-temporada-view">
                     <h2>Gerenciador de Temporadas</h2>
@@ -151,18 +154,17 @@
                 </div>
             </div>
 
-            <!-- PÁGINA: CALENDÁRIO -->
             <div id="page-calendario" class="page">
                 <h2>Calendário</h2>
                 <div id="lista-corridas"></div>
             </div>
             
-            <!-- PÁGINA: CLASSIFICAÇÃO -->
             <div id="page-classificacao" class="page">
                 <h2>Classificação</h2>
                 <div class="tabs">
                     <button class="tab-button active" data-tab="pilotos">Pilotos</button>
                     <button class="tab-button" data-tab="equipes">Equipes</button>
+                    <button id="tab-btn-sprint" class="tab-button hidden" data-tab="sprint">Sprint</button>
                     <button class="tab-button" data-tab="fas">Fãs</button>
                 </div>
 
@@ -185,6 +187,23 @@
                         </table>
                     </div>
                 </div>
+                <div id="tab-sprint" class="tab-content">
+                    <p style="margin-bottom: 10px; font-size: 0.9rem; color: #666; padding: 0 10px;">Pontuação apenas de corridas Sprint.</p>
+                    <div class="card" style="padding: 0;">
+                        <h4 style="padding: 10px; border-bottom: 1px solid #eee;">Pilotos (Sprint)</h4>
+                        <table class="tabela">
+                            <thead><tr><th>Pos</th><th>Piloto</th><th>Pts</th></tr></thead>
+                            <tbody id="tabela-sprint-pilotos"></tbody>
+                        </table>
+                    </div>
+                    <div class="card" style="padding: 0; margin-top: 15px;">
+                        <h4 style="padding: 10px; border-bottom: 1px solid #eee;">Equipes (Sprint)</h4>
+                        <table class="tabela">
+                            <thead><tr><th>Pos</th><th>Equipe</th><th>Pts</th></tr></thead>
+                            <tbody id="tabela-sprint-equipes"></tbody>
+                        </table>
+                    </div>
+                </div>
                 <div id="tab-fas" class="tab-content">
                     <div class="card" style="padding: 0;">
                         <table class="tabela">
@@ -195,15 +214,23 @@
                 </div>
             </div>
             
-            <!-- PÁGINA: NOTÍCIAS -->
             <div id="page-noticias" class="page">
                 <h2>Notícias</h2>
                 <div id="lista-noticias"></div>
             </div>
 
-            <!-- PÁGINA: ADMIN -->
             <div id="page-admin" class="page">
                 <h2>Administração</h2>
+                
+                <div class="card" style="border-left: 4px solid var(--cor-aviso);">
+                    <h3>Reparos e Configurações</h3>
+                    <div class="input-group" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                        <input type="checkbox" id="check-separar-sprint" style="width: 20px; height: 20px;">
+                        <label for="check-separar-sprint" style="margin: 0;">Separar Pontos da Sprint na Tabela</label>
+                    </div>
+                    <button id="btn-fix-noticias" class="btn btn-aviso">🛠️ Corrigir Bug de Notícias (Tela Branca)</button>
+                </div>
+
                 <div class="card">
                     <h3>Gerenciar Itens</h3>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
@@ -248,7 +275,6 @@
         </nav>
     </div>
 
-    <!-- MODAIS -->
     <div id="modal-backdrop" class="modal-backdrop">
         <div id="modal-content" class="modal-content"></div>
     </div>
@@ -262,6 +288,7 @@
             const createNewSeason = (nome) => ({
                 id: Date.now(),
                 nome,
+                separarSprint: false, // Nova config
                 equipes: [],
                 pilotos: [],
                 calendario: [],
@@ -286,6 +313,16 @@
                 const savedState = localStorage.getItem(APP_STORAGE_KEY);
                 if (savedState) {
                     state = JSON.parse(savedState);
+                    // Migração de dados para versões antigas
+                    Object.values(state.seasons).forEach(s => {
+                        if (typeof s.separarSprint === 'undefined') s.separarSprint = false;
+                        if (s.noticias) {
+                            s.noticias.forEach(n => {
+                                if (typeof n.likes === 'undefined') n.likes = Math.floor(Math.random() * 500) + 10;
+                                if (typeof n.comentarios === 'undefined') n.comentarios = Math.floor(Math.random() * 60) + 2;
+                            });
+                        }
+                    });
                 } else {
                     state = {
                         seasons: {},
@@ -339,7 +376,11 @@
 
                 const renderMiniLista = (containerId, items, renderFn) => {
                     const container = document.getElementById(containerId);
-                    container.innerHTML = items.length ? '' : '<p>Nenhum item.</p>';
+                    if(!items || items.length === 0) {
+                        container.innerHTML = '<p>Nenhum item.</p>';
+                        return;
+                    }
+                    container.innerHTML = '';
                     items.forEach(item => container.innerHTML += renderFn(item));
                 };
 
@@ -351,7 +392,10 @@
                     return `<div class="lista-item"><div class="item-cor" style="background-color: ${equipe?.cor || '#ccc'};"></div><p>${p.nome}</p></div>`;
                 });
 
-                const ultimasNoticias = [...season.noticias].sort((a, b) => b.data - a.data).slice(0, 3);
+                // Safe check para noticias
+                const noticiasSeguras = Array.isArray(season.noticias) ? season.noticias : [];
+                const ultimasNoticias = [...noticiasSeguras].sort((a, b) => b.data - a.data).slice(0, 3);
+                
                 renderMiniLista('dashboard-lista-noticias', ultimasNoticias, (n) => `
     <div class="lista-item dashboard-noticia-preview" style="cursor:pointer;align-items:flex-start;" data-action="goto-noticias">
         ${n.imgUrl ? `<img src="${n.imgUrl}" alt="Imagem" style="width:56px;height:56px;object-fit:cover;border-radius:10px;margin-right:12px;">` : ''}
@@ -401,31 +445,82 @@
                 const season = getCurrentSeason();
                 if (!season) return;
 
-                const pilotosOrdenados = [...season.pilotos].sort((a,b) => b.pontos - a.pontos);
-                document.getElementById('tabela-pilotos').innerHTML = pilotosOrdenados.map((p, index) => {
-                    const equipe = season.equipes.find(e => e.id === p.equipeId);
-                    return `<tr data-action="ver-piloto" data-id="${p.id}" style="cursor: pointer;">
-                        <td class="pos">${index + 1}</td>
-                        <td>
-                            <div class="piloto-info">
-                                <div class="item-cor" style="background-color: ${equipe?.cor || '#ccc'}"></div>
-                                <img src="${p.img || 'https://placehold.co/40x40/eee/ccc?text=?'}" alt="${p.nome}">
-                                <span>${p.nome}</span>
-                            </div>
-                        </td>
-                        <td style="font-weight: bold; text-align: right;">${p.pontos}</td></tr>`;
-                }).join('');
+                const separarSprint = season.separarSprint;
+                const tabSprintBtn = document.getElementById('tab-btn-sprint');
+                
+                // Controle da aba Sprint
+                if (separarSprint) {
+                    tabSprintBtn.classList.remove('hidden');
+                } else {
+                    tabSprintBtn.classList.add('hidden');
+                    // Se estava na aba sprint e desativou, volta pra pilotos
+                    if(document.getElementById('tab-sprint').classList.contains('active')){
+                         document.querySelector('[data-tab="pilotos"]').click();
+                    }
+                }
 
+                // Função auxiliar para renderizar tabela
+                const renderTableRows = (pilotosList, type) => {
+                    return pilotosList.map((p, index) => {
+                        const equipe = season.equipes.find(e => e.id === p.equipeId);
+                        const pontosExibidos = type === 'total' ? p.pontos : 
+                                               type === 'principal' ? p.pontosPrincipal : 
+                                               p.pontosSprint;
+                        
+                        return `<tr data-action="ver-piloto" data-id="${p.id}" style="cursor: pointer;">
+                            <td class="pos">${index + 1}</td>
+                            <td>
+                                <div class="piloto-info">
+                                    <div class="item-cor" style="background-color: ${equipe?.cor || '#ccc'}"></div>
+                                    <img src="${p.img || 'https://placehold.co/40x40/eee/ccc?text=?'}" alt="${p.nome}">
+                                    <span>${p.nome}</span>
+                                </div>
+                            </td>
+                            <td style="font-weight: bold; text-align: right;">${pontosExibidos}</td></tr>`;
+                    }).join('');
+                };
+
+                // --- TABELA PRINCIPAL (PILOTOS) ---
+                // Se separado: ordena por pontosPrincipal. Se junto: ordena por pontos (total)
+                const pilotosPrincipal = [...season.pilotos].sort((a,b) => {
+                    const pA = separarSprint ? a.pontosPrincipal : a.pontos;
+                    const pB = separarSprint ? b.pontosPrincipal : b.pontos;
+                    return pB - pA;
+                });
+                document.getElementById('tabela-pilotos').innerHTML = renderTableRows(pilotosPrincipal, separarSprint ? 'principal' : 'total');
+
+                // --- TABELA SPRINT (PILOTOS) ---
+                if (separarSprint) {
+                    const pilotosSprint = [...season.pilotos].sort((a,b) => b.pontosSprint - a.pontosSprint);
+                    document.getElementById('tabela-sprint-pilotos').innerHTML = renderTableRows(pilotosSprint, 'sprint');
+                    
+                    // Equipes Sprint
+                     const pontosEquipesSprint = season.equipes.map(eq => ({
+                        ...eq,
+                        ptsSprint: season.pilotos.filter(p => p.equipeId === eq.id).reduce((acc, p) => acc + p.pontosSprint, 0)
+                    })).sort((a,b) => b.ptsSprint - a.ptsSprint);
+
+                    document.getElementById('tabela-sprint-equipes').innerHTML = pontosEquipesSprint.map((eq, index) => `
+                     <tr data-action="ver-equipe" data-id="${eq.id}" style="cursor: pointer;">
+                        <td class="pos">${index + 1}</td>
+                        <td><div class="piloto-info"><img src="${eq.logo}" class="item-avatar"><span>${eq.nome}</span></div></td>
+                        <td style="font-weight: bold; text-align: right;">${eq.ptsSprint}</td></tr>`).join('');
+                }
+
+                // --- TABELA EQUIPES (PRINCIPAL) ---
                 const pontosEquipes = season.equipes.map(eq => ({
                     ...eq,
-                    pontos: season.pilotos.filter(p => p.equipeId === eq.id).reduce((acc, p) => acc + p.pontos, 0)
-                })).sort((a,b) => b.pontos - a.pontos);
+                    // Se separado, conta só os pontos principais para a tabela principal de construtores
+                    pts: season.pilotos.filter(p => p.equipeId === eq.id).reduce((acc, p) => acc + (separarSprint ? p.pontosPrincipal : p.pontos), 0)
+                })).sort((a,b) => b.pts - a.pts);
+                
                 document.getElementById('tabela-equipes').innerHTML = pontosEquipes.map((eq, index) => `
                      <tr data-action="ver-equipe" data-id="${eq.id}" style="cursor: pointer;">
                         <td class="pos">${index + 1}</td>
                         <td><div class="piloto-info"><img src="${eq.logo}" class="item-avatar"><span>${eq.nome}</span></div></td>
-                        <td style="font-weight: bold; text-align: right;">${eq.pontos}</td></tr>`).join('');
+                        <td style="font-weight: bold; text-align: right;">${eq.pts}</td></tr>`).join('');
 
+                // --- TABELA FÃS ---
                 const fasOrdenados = [...season.pilotos].sort((a,b) => b.fas - a.fas);
                 document.getElementById('tabela-fas').innerHTML = fasOrdenados.map((p, index) => {
                     const equipe = season.equipes.find(e => e.id === p.equipeId);
@@ -449,10 +544,22 @@
                     lista.innerHTML = '<p>Selecione uma temporada para ver as notícias.</p>';
                     return;
                 }
-                lista.innerHTML = season.noticias.length ? '' : '<p>Nenhuma notícia publicada.</p>';
+                
+                if (!season.noticias || !Array.isArray(season.noticias) || season.noticias.length === 0) {
+                     lista.innerHTML = '<p>Nenhuma notícia publicada.</p>';
+                     return;
+                }
+
+                lista.innerHTML = '';
+                // Ordenar e renderizar
                 [...season.noticias].sort((a, b) => b.data - a.data).forEach(n => {
                     const pilotos = n.pilotosMarcados?.map(pid => season.pilotos.find(p => p.id == pid)?.nome).filter(Boolean).join(', ');
                     const equipes = n.equipesMarcadas?.map(eid => season.equipes.find(e => e.id == eid)?.nome).filter(Boolean).join(', ');
+                    
+                    // Sistema Fake de Social
+                    const likes = n.likes ? n.likes.toLocaleString('pt-BR') : '0';
+                    const comments = n.comentarios ? n.comentarios : '0';
+
                     lista.innerHTML += `
                         <div class="card">
                             <div style="display:flex; justify-content: space-between; align-items: start;">
@@ -463,6 +570,12 @@
                             <p>${n.conteudo}</p>
                             ${pilotos ? `<p style="font-size: 0.8rem; color: #888; margin-top: 10px;"><i>Pilotos: ${pilotos}</i></p>` : ''}
                             ${equipes ? `<p style="font-size: 0.8rem; color: #888; margin-top: 5px;"><i>Equipes: ${equipes}</i></p>` : ''}
+                            
+                            <div class="social-stats">
+                                <span>❤️ ${likes} Curtidas</span>
+                                <span>💬 ${comments} Comentários</span>
+                                <span style="margin-left:auto;">🔗 Compartilhar</span>
+                            </div>
                         </div>`;
                 });
             };
@@ -470,6 +583,9 @@
             const renderAdminPage = () => {
                 const season = getCurrentSeason();
                 if (!season) return;
+                
+                document.getElementById('check-separar-sprint').checked = season.separarSprint;
+
                 const renderPontosInputs = (tipo) => {
                     const container = document.getElementById(`pontos-${tipo}-container`);
                     const pontos = season.pontuacao[tipo];
@@ -489,21 +605,49 @@
                 document.getElementById('modal-backdrop').classList.add('visible');
             };
             const hideModal = () => document.getElementById('modal-backdrop').classList.remove('visible');
-            window.hideModal = hideModal; // Torna a função global
+            window.hideModal = hideModal;
             
             const calcularPontosTotais = () => {
                 const season = getCurrentSeason();
                 if (!season) return;
-                season.pilotos.forEach(p => p.pontos = 0);
+                
+                // Resetar pontos
+                season.pilotos.forEach(p => { 
+                    p.pontos = 0; 
+                    p.pontosSprint = 0; 
+                    p.pontosPrincipal = 0; 
+                });
+
                 season.calendario.forEach(corrida => {
                     if (corrida.status === 'finalizada' && corrida.resultados) {
                         const res = corrida.resultados;
                         const getPiloto = id => season.pilotos.find(p => p.id == id);
-                        Object.entries(res.quali).forEach(([pos, pId]) => { const p = getPiloto(pId); if (p) p.pontos += (season.pontuacao.quali[pos] || 0); });
-                        Object.entries(res.sprint).forEach(([pos, pId]) => { const p = getPiloto(pId); if (p && pId !== 'DNF') p.pontos += (season.pontuacao.sprint[pos] || 0); });
-                        Object.entries(res.corrida).forEach(([pos, pId]) => { const p = getPiloto(pId); if (p && pId !== 'DNF') p.pontos += (season.pontuacao.corrida[pos] || 0); });
-                        if(res.voltaRapida) { const p = getPiloto(res.voltaRapida); if(p) p.pontos += (season.pontuacao.voltaRapida || 0); }
+                        
+                        // Pontos Principal (Quali + Corrida + Volta)
+                        Object.entries(res.quali).forEach(([pos, pId]) => { 
+                            const p = getPiloto(pId); 
+                            if (p) p.pontosPrincipal += (season.pontuacao.quali[pos] || 0); 
+                        });
+                        Object.entries(res.corrida).forEach(([pos, pId]) => { 
+                            const p = getPiloto(pId); 
+                            if (p && pId !== 'DNF') p.pontosPrincipal += (season.pontuacao.corrida[pos] || 0); 
+                        });
+                        if(res.voltaRapida) { 
+                            const p = getPiloto(res.voltaRapida); 
+                            if(p) p.pontosPrincipal += (season.pontuacao.voltaRapida || 0); 
+                        }
+
+                        // Pontos Sprint (Separado)
+                        Object.entries(res.sprint).forEach(([pos, pId]) => { 
+                            const p = getPiloto(pId); 
+                            if (p && pId !== 'DNF') p.pontosSprint += (season.pontuacao.sprint[pos] || 0); 
+                        });
                     }
+                });
+
+                // Soma total (para compatibilidade ou visualização total)
+                season.pilotos.forEach(p => {
+                    p.pontos = p.pontosPrincipal + p.pontosSprint;
                 });
             };
 
@@ -520,7 +664,7 @@
                         if (posCorrida && resultados.corrida[posCorrida] !== 'DNF') {
                             piloto.fas += Math.floor((totalPilotos - parseInt(posCorrida) + 1) * 50 * (Math.random() * 0.5 + 0.8));
                         } else {
-                            piloto.fas -= Math.floor(Math.random() * 50); // Penalidade por não pontuar ou DNF
+                            piloto.fas -= Math.floor(Math.random() * 50); 
                         }
                     });
                 }
@@ -556,7 +700,7 @@
                     const rankPiloto = rankingPilotos[piloto.id];
                     const rankEquipe = rankingEquipes[piloto.equipeId];
                     if (!rankPiloto || !rankEquipe) {
-                        piloto.reputacao = 5.0; // Padrão se não houver dados
+                        piloto.reputacao = 5.0; 
                         return;
                     }
                     
@@ -574,6 +718,14 @@
                 const button = e.target.closest('.nav-button');
                 if (button) {
                     const pageId = `page-${button.dataset.page}`;
+                    
+                    // Bugfix preventivo ao trocar de página
+                    if(pageId === 'page-noticias') {
+                        const season = getCurrentSeason();
+                        if(!season.noticias) season.noticias = [];
+                        renderNoticias();
+                    }
+
                     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
                     document.getElementById(pageId).classList.add('active');
                     document.querySelectorAll('.nav-button').forEach(b => b.classList.remove('active'));
@@ -609,6 +761,32 @@
                 state.currentSeasonId = null;
                 saveState();
                 render();
+            });
+
+            // Listener Admin Reparos
+            document.getElementById('check-separar-sprint').addEventListener('change', (e) => {
+                const season = getCurrentSeason();
+                if(season) {
+                    season.separarSprint = e.target.checked;
+                    calcularPontosTotais(); // Recalcula pra garantir
+                    saveState();
+                    renderClassificacao(); // Atualiza a tela de classificação
+                    alert('Configuração salva! Verifique a aba de Classificação.');
+                }
+            });
+
+            document.getElementById('btn-fix-noticias').addEventListener('click', () => {
+                const season = getCurrentSeason();
+                if(season) {
+                    if (confirm('Isso vai limpar qualquer notícia corrompida que esteja travando o app. Deseja continuar?')) {
+                        if (!Array.isArray(season.noticias)) season.noticias = [];
+                        // Filtra apenas notícias válidas
+                        season.noticias = season.noticias.filter(n => n && n.id && n.titulo);
+                        saveState();
+                        render();
+                        alert('Correção aplicada! Tente acessar a aba Notícias agora.');
+                    }
+                }
             });
 
             document.getElementById('main-content').addEventListener('click', e => {
@@ -651,6 +829,7 @@
                     case 'ver-resultados': showVerResultadosModal(id); break;
                     case 'ver-piloto': showVerPilotoModal(id); break;
                     case 'ver-equipe': showVerEquipeModal(id); break;
+                    case 'goto-noticias': document.querySelector('[data-page="noticias"]').click(); break;
                 }
             });
             
@@ -829,6 +1008,12 @@
                 });
                 const avgQuali = qualiPos.length ? (qualiPos.reduce((a,b) => a+b, 0) / qualiPos.length).toFixed(1) : 'N/A';
                 const avgRace = racePos.length ? (racePos.reduce((a,b) => a+b, 0) / racePos.length).toFixed(1) : 'N/A';
+                
+                // Exibição condicional de pontos se a sprint estiver separada
+                const pontosDetail = season.separarSprint 
+                    ? `<p><strong>Pontos Totais:</strong> ${piloto.pontos} <span style="font-size:0.8rem">(${piloto.pontosPrincipal} Princ. + ${piloto.pontosSprint} Sprint)</span></p>`
+                    : `<p><strong>Pontos:</strong> ${piloto.pontos}</p>`;
+
                 showModal(`
         <div style="text-align:center;">
             <img src="${piloto.img || 'https://placehold.co/80x80/eee/ccc?text=?'}" class="item-avatar" style="width:80px;height:80px;margin-bottom:10px;">
@@ -837,7 +1022,7 @@
         </div>
         <div style="margin-top:20px;">
             <p><strong>Posição Geral:</strong> ${rank}º</p>
-            <p><strong>Pontos:</strong> ${piloto.pontos}</p>
+            ${pontosDetail}
             <p><strong>Pos. Média Quali:</strong> ${avgQuali}</p>
             <p><strong>Pos. Média Corrida:</strong> ${avgRace}</p>
             <p><strong>Fãs:</strong> ${piloto.fas.toLocaleString('pt-BR')}</p>
@@ -858,7 +1043,7 @@
         <div style="text-align:center;">
             <img src="${equipe.logo || 'https://placehold.co/80x80/eee/ccc?text=?'}" class="item-avatar" style="width:80px;height:80px;margin-bottom:10px;">
             <h2>${equipe.nome}</h2>
-            <p style="font-size:1.2rem;font-weight:bold;">${totalPontos} Pontos</p>
+            <p style="font-size:1.2rem;font-weight:bold;">${totalPontos} Pontos Totais</p>
         </div>
         <div style="margin-top:20px;">
             <h3>Pilotos</h3>
@@ -930,7 +1115,20 @@
                     }
                 }
                 if (form.id === 'form-add-noticia') {
-                    const noticia = { id: Date.now(), titulo: form.querySelector('#noticia-titulo').value, conteudo: form.querySelector('#noticia-conteudo').value, imgUrl: form.querySelector('#noticia-img').value, impacto: form.querySelector('#noticia-impacto').value, pilotosMarcados: Array.from(form.querySelector('#noticia-pilotos').selectedOptions).map(o => o.value), equipesMarcadas: Array.from(form.querySelector('#noticia-equipes').selectedOptions).map(o => o.value), data: Date.now() };
+                    const noticia = { 
+                        id: Date.now(), 
+                        titulo: form.querySelector('#noticia-titulo').value, 
+                        conteudo: form.querySelector('#noticia-conteudo').value, 
+                        imgUrl: form.querySelector('#noticia-img').value, 
+                        impacto: form.querySelector('#noticia-impacto').value, 
+                        pilotosMarcados: Array.from(form.querySelector('#noticia-pilotos').selectedOptions).map(o => o.value), 
+                        equipesMarcadas: Array.from(form.querySelector('#noticia-equipes').selectedOptions).map(o => o.value), 
+                        data: Date.now(),
+                        // Fake social stats gerados na hora
+                        likes: Math.floor(Math.random() * 500) + 10,
+                        comentarios: Math.floor(Math.random() * 60) + 2
+                    };
+                    if(!season.noticias) season.noticias = [];
                     season.noticias.push(noticia);
                     atualizarFasEReputacao(null, noticia);
                 }
@@ -998,7 +1196,10 @@
                             const res = corrida.resultados;
                             Object.entries(res.quali).forEach(([pos, pId]) => { if(pId == pilotoId) pontosDaCorrida += (season.pontuacao.quali[pos] || 0); });
                             const sprintPos = Object.keys(res.sprint).find(pos => res.sprint[pos] == pilotoId);
+                            // IMPORTANTE: Aqui precisamos somar tudo para o gráfico total, 
+                            // independente se a visualização da tabela está separada ou não.
                             if (sprintPos) pontosDaCorrida += (season.pontuacao.sprint[sprintPos] || 0);
+                            
                             const racePos = Object.keys(res.corrida).find(pos => res.corrida[pos] == pilotoId);
                             if (racePos && res.corrida[racePos] !== 'DNF') pontosDaCorrida += (season.pontuacao.corrida[racePos] || 0);
                             if(res.voltaRapida == pilotoId) pontosDaCorrida += season.pontuacao.voltaRapida;
@@ -1018,7 +1219,7 @@
             
             if ('serviceWorker' in navigator) {
                 window.addEventListener('load', () => {
-                    navigator.serviceWorker.register('/sw.js').then(reg => console.log('SW registered.'), err => console.log('SW registration failed: ', err));
+                    navigator.serviceWorker.register('sw.js').then(reg => console.log('SW registered.'), err => console.log('SW registration failed: ', err));
                 });
             }
 
